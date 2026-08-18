@@ -1,7 +1,7 @@
 ---
 // Decap CMS 后台入口。
 // 访问：
-//   生产/默认：/admin/            （使用 public/admin/config.yml，GitHub OAuth）
+//   生产/默认：/admin/            （使用构建时生成的 config.yml，GitHub OAuth）
 //   本地免鉴权：/admin/?config=config.local.yml （使用 config.local.yml + local_backend）
 // 注意：不要在此页面写业务代码，仅负责加载 Decap CMS 运行时。
 ---
@@ -36,7 +36,7 @@
         window.setTimeout(() => window.clearInterval(autoEnter), 15000);
       }
     </script>
-    <!-- Decap CMS 从同目录下的 config.yml 读取配置；本地入口脚本会自动切换为 config.local.yml。 -->
+    <!-- Decap CMS 从同目录下构建时生成的 config.yml 读取配置；本地入口脚本会自动切换为 config.local.yml。 -->
     <script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
   </body>
 </html>

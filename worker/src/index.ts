@@ -13,6 +13,10 @@
 //   QUOTE_NOTIFY_TO        — 报价通知接收邮箱
 //   GOOGLE_TRANSLATE_API_KEY — Google Cloud Translation API key（后台翻译助手，可选）
 //   TRANSLATE_ALLOWED_ORIGIN — 可选，限制翻译请求来源（例如 https://www.karfanjara.ge）
+//   GITHUB_OAUTH_ID        — Decap CMS GitHub OAuth App Client ID
+//   GITHUB_OAUTH_SECRET    — Decap CMS GitHub OAuth App Client Secret
+//   GITHUB_REPO_PRIVATE    — 私有仓库设为 1；公开仓库可不设置
+//   DECAP_CMS_ORIGIN       — CMS 正式站点 Origin（例如 https://fengya.pages.dev）
 //   KV 绑定 "QUOTES"       — 报价记录存储（wrangler.toml 中配置）
 
 interface Env {
@@ -23,6 +27,10 @@ interface Env {
   QUOTE_NOTIFY_TO?: string;
   GOOGLE_TRANSLATE_API_KEY?: string;
   TRANSLATE_ALLOWED_ORIGIN?: string;
+  GITHUB_OAUTH_ID?: string;
+  GITHUB_OAUTH_SECRET?: string;
+  GITHUB_REPO_PRIVATE?: string;
+  DECAP_CMS_ORIGIN?: string;
   QUOTES?: KVNamespace;
 }
 
@@ -244,12 +252,177 @@ async function handleTranslate(request: Request, env: Env): Promise<Response> {
   }
 }
 
+const OAUTH_STATE_COOKIE = 'fengya_decap_oauth_state';
+
+function randomHex(bytes = 24): string {
+  const buffer = new Uint8Array(bytes);
+  crypto.getRandomValues(buffer);
+  return Array.from(buffer, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function getCookie(request: Request, name: string): string | null {
+  const cookieHeader = request.headers.get('Cookie') || '';
+  for (const part of cookieHeader.split(';')) {
+    const [key, ...value] = part.trim().split('=');
+    if (key === name) return value.join('=') || null;
+  }
+  return null;
+}
+
+function stateCookie(state: string, maxAge: number): string {
+  return `${OAUTH_STATE_COOKIE}=${state}; Max-Age=${maxAge}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
+function cmsOrigin(env: Env): string | null {
+  if (!env.DECAP_CMS_ORIGIN) return null;
+  try {
+    const origin = new URL(env.DECAP_CMS_ORIGIN).origin;
+    return origin === 'null' ? null : origin;
+  } catch {
+    return null;
+  }
+}
+
+function textResponse(body: string, status = 200, headers: Record<string, string> = {}): Response {
+  return new Response(body, {
+    status,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', ...headers },
+  });
+}
+
+/**
+ * Decap expects the OAuth popup to post a provider message back to /admin.
+ * The token is returned to the browser only; this Worker never stores content
+ * or GitHub access tokens.
+ */
+function oauthPopupResponse(
+  status: 'success' | 'error',
+  payload: Record<string, string>,
+  origin: string,
+  headers: Record<string, string> = {}
+): Response {
+  const message = `authorization:github:${status}:${JSON.stringify(payload)}`;
+  const messageLiteral = JSON.stringify(message);
+  const originLiteral = JSON.stringify(origin);
+  const html = `<!doctype html>
+<html><head><meta charset="utf-8"><title>Authorizing Decap CMS</title></head>
+<body><p>Authorizing Decap CMS…</p>
+<script>
+  (function () {
+    var message = ${messageLiteral};
+    var targetOrigin = ${originLiteral};
+    var send = function () {
+      if (window.opener) {
+        window.opener.postMessage(message, targetOrigin);
+        window.close();
+      }
+    };
+    window.addEventListener('message', send, false);
+    window.opener && window.opener.postMessage('authorizing:github', targetOrigin);
+    setTimeout(send, 250);
+  }());
+</script></body></html>`;
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      ...headers,
+    },
+  });
+}
+
+/** Start the GitHub OAuth flow for Decap CMS. */
+async function handleDecapAuth(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  if (url.searchParams.get('provider') !== 'github') {
+    return textResponse('Invalid provider', 400);
+  }
+  if (!env.GITHUB_OAUTH_ID || !env.GITHUB_OAUTH_SECRET) {
+    return textResponse('GitHub OAuth is not configured on this Worker', 503);
+  }
+
+  const state = randomHex();
+  const scope = env.GITHUB_REPO_PRIVATE && env.GITHUB_REPO_PRIVATE !== '0' ? 'repo,user' : 'public_repo,user';
+  const authorizeUrl = new URL('https://github.com/login/oauth/authorize');
+  authorizeUrl.searchParams.set('client_id', env.GITHUB_OAUTH_ID);
+  authorizeUrl.searchParams.set('redirect_uri', `${url.origin}/callback`);
+  authorizeUrl.searchParams.set('scope', scope);
+  authorizeUrl.searchParams.set('state', state);
+
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: authorizeUrl.toString(),
+      'Cache-Control': 'no-store',
+      'Set-Cookie': stateCookie(state, 600),
+    },
+  });
+}
+
+/** Exchange GitHub's code and return the token to the Decap popup. */
+async function handleDecapCallback(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const origin = cmsOrigin(env);
+  if (!origin) return textResponse('DECAP_CMS_ORIGIN is missing or invalid', 503);
+  if (!env.GITHUB_OAUTH_ID || !env.GITHUB_OAUTH_SECRET) {
+    return textResponse('GitHub OAuth is not configured on this Worker', 503);
+  }
+
+  const state = url.searchParams.get('state');
+  const expectedState = getCookie(request, OAUTH_STATE_COOKIE);
+  const clearCookie = stateCookie('', 0);
+  if (!state || !expectedState || state !== expectedState) {
+    return oauthPopupResponse('error', { error: 'OAuth state validation failed. Please try again.' }, origin, {
+      'Set-Cookie': clearCookie,
+    });
+  }
+
+  const code = url.searchParams.get('code');
+  if (!code) {
+    const description = url.searchParams.get('error_description') || url.searchParams.get('error') || 'GitHub authorization was cancelled.';
+    return oauthPopupResponse('error', { error: description }, origin, { 'Set-Cookie': clearCookie });
+  }
+
+  try {
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'fengya-decap-oauth',
+      },
+      body: JSON.stringify({
+        client_id: env.GITHUB_OAUTH_ID,
+        client_secret: env.GITHUB_OAUTH_SECRET,
+        code,
+        redirect_uri: `${url.origin}/callback`,
+      }),
+    });
+    const tokenResult = await tokenResponse.json() as { access_token?: string; error?: string; error_description?: string };
+    if (!tokenResponse.ok || !tokenResult.access_token) {
+      const message = tokenResult.error_description || tokenResult.error || 'GitHub token exchange failed.';
+      return oauthPopupResponse('error', { error: message }, origin, { 'Set-Cookie': clearCookie });
+    }
+
+    return oauthPopupResponse('success', { token: tokenResult.access_token }, origin, {
+      'Set-Cookie': clearCookie,
+    });
+  } catch {
+    return oauthPopupResponse('error', { error: 'GitHub OAuth is temporarily unavailable.' }, origin, {
+      'Set-Cookie': clearCookie,
+    });
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env) {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
     const { pathname } = new URL(request.url);
+    if (request.method === 'GET' && pathname === '/auth') return handleDecapAuth(request, env);
+    if (request.method === 'GET' && pathname === '/callback') return handleDecapCallback(request, env);
     if (request.method === 'POST' && pathname === '/api/contact') return handleContact(request, env);
     if (request.method === 'POST' && pathname === '/api/quote') return handleQuote(request, env);
     if (request.method === 'POST' && pathname === '/api/translate') return handleTranslate(request, env);

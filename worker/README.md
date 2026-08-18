@@ -14,6 +14,8 @@ Este directorio es un **Cloudflare Worker independiente** que sustituye a la ant
 
 | 路由 | 功能 |
 | --- | --- |
+| `GET /auth?provider=github` | Decap CMS GitHub OAuth 登录入口 |
+| `GET /callback` | GitHub OAuth 回调，仅把短期授权结果回传给 CMS 弹窗，不保存 Token |
 | `POST /api/contact` | 联系表单：姓名 / 电话 / 邮箱 / 留言；Turnstile 人机校验；成功后转发到 Webhook（`NOTIFY_URL`，可接 Slack / 飞书 / 自有接口） |
 | `POST /api/quote`  | 报价表单：姓名 / 电话 / 产品类型 / 面积 / 地址 / 描述；Turnstile 校验；记录写入 Cloudflare KV（90 天过期）；经 Resend 发邮件通知管理员 |
 | 其他路径 / 方法 | 一律返回 404 / 405 |
@@ -24,7 +26,7 @@ Este directorio es un **Cloudflare Worker independiente** que sustituye a la ant
 - **容错**：Webhook / 邮件 / KV 任一步失败都不影响前端收到「提交成功」，避免用户重复提交。
 
 所需配置（`wrangler secret`，不进仓库）：
-`TURNSTILE_SECRET_KEY`、`NOTIFY_URL`、`RESEND_API_KEY`、`RESEND_FROM_EMAIL`、`QUOTE_NOTIFY_TO`，以及 KV 绑定 `QUOTES`。
+`TURNSTILE_SECRET_KEY`、`NOTIFY_URL`、`RESEND_API_KEY`、`RESEND_FROM_EMAIL`、`QUOTE_NOTIFY_TO`、`GITHUB_OAUTH_ID`、`GITHUB_OAUTH_SECRET`，以及 KV 绑定 `QUOTES`。`DECAP_CMS_ORIGIN` 和 `GITHUB_REPO_PRIVATE` 可按 `worker/wrangler.toml` 配置。
 
 ### 二、实现原理
 

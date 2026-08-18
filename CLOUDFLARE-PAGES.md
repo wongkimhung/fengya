@@ -50,6 +50,8 @@ git push origin main
 
 在 Pages 项目 → Settings → Environment variables 中配置 Production 和 Preview：
 
+进入 Cloudflare Dashboard → Workers & Pages → `fengya` → Settings → Environment variables → Add variable。`DECAP_AUTH_BASE_URL` 至少要添加到 **Production**；如果要在 Preview 地址使用 CMS，也同时添加到 **Preview**。Cloudflare Pages 构建时会读取该变量并生成最终的 `/admin/config.yml`。
+
 | 变量 | 示例 | 说明 |
 |---|---|---|
 | `NODE_VERSION` | `20` | 构建 Node 版本 |
@@ -57,6 +59,7 @@ git push origin main
 | `FORM_ENDPOINT` | `https://form.example.com` | Worker 地址，不带 `/api/...` |
 | `MEDIA_BASE` | 留空或 `https://assets.example.com` | 外部图片资源域名，可选 |
 | `SITE_URL` | `https://www.example.com` | canonical / SEO 地址，可选 |
+| `DECAP_AUTH_BASE_URL` | `https://form.example.com` | Decap GitHub OAuth Worker 地址；构建时注入 `/admin/config.yml`，不要写入代码 |
 
 不要把 `TURNSTILE_SECRET_KEY`、`GOOGLE_TRANSLATE_API_KEY`、Resend Key 等私钥配置到 Pages；它们只属于 Worker Secret。
 
@@ -85,6 +88,33 @@ npx wrangler secret put RESEND_API_KEY --config worker/wrangler.toml
 npx wrangler secret put RESEND_FROM_EMAIL --config worker/wrangler.toml
 npx wrangler secret put QUOTE_NOTIFY_TO --config worker/wrangler.toml
 ```
+
+### 4.1 配置 CMS 的 GitHub 登录（Cloudflare Pages 必需）
+
+Cloudflare Pages 不是 Netlify，Decap CMS 不能使用默认的 `api.netlify.com` 登录地址。本项目的同一个 Worker 同时提供表单接口和 Decap OAuth 代理：
+
+1. 打开 GitHub → Settings → Developer settings → OAuth Apps → **New OAuth App**。
+2. `Homepage URL` 填 Worker 地址，例如 `https://form.karfanjara.workers.dev`。
+3. `Authorization callback URL` 填 `https://form.karfanjara.workers.dev/callback`。
+4. 创建后把 Client ID 和 Client Secret 写入 Worker Secret（不要写进 GitHub 或 Pages 环境变量）：
+
+   ```bash
+   npx wrangler secret put GITHUB_OAUTH_ID --config worker/wrangler.toml
+   npx wrangler secret put GITHUB_OAUTH_SECRET --config worker/wrangler.toml
+   # fengya 是公开仓库时不需要；私有仓库再执行：
+   npx wrangler secret put GITHUB_REPO_PRIVATE --config worker/wrangler.toml
+   # 输入 1
+   ```
+
+5. 确认 `worker/wrangler.toml` 中的 `DECAP_CMS_ORIGIN` 是实际 CMS 地址（当前为 `https://fengya.pages.dev`），然后重新部署 Worker：
+
+   ```bash
+   npm run worker:deploy
+   ```
+
+   `public/admin/config.yml` 只保存模板；Cloudflare Pages 构建时从 `DECAP_AUTH_BASE_URL` 注入 `base_url` 和 `auth_endpoint: /auth`，因此登录时不会再请求 `api.netlify.com`。
+
+如果你的 Worker 不是示例地址，请只修改 Cloudflare Pages 的 `DECAP_AUTH_BASE_URL`、`FORM_ENDPOINT` 和 GitHub OAuth App 的两个 URL；不要修改模板里的 `base_url`。
 
 部署 Worker：
 
@@ -133,6 +163,7 @@ npm run build
 - `/search-index.json`
 - 联系表单和报价表单
 - `/admin/translator/`
+- `/admin/` → GitHub 登录弹窗应跳转到 Worker，再回到 CMS；不应出现 `api.netlify.com/auth`。
 
 本地 CMS 调试仍使用：
 
@@ -141,3 +172,27 @@ npm run dev:all
 ```
 
 然后直接访问 `http://localhost:4321/admin/`，无需 GitHub 登录。
+
+## 八、无法安装 GitHub/GitLab 账户时
+
+如果 Cloudflare 提示：`Cloudflare Pages 无法安装在您的 GitHub/GitLab 帐户上。请尝试完全卸载之前的安装，然后重新安装。`，按以下顺序处理：
+
+1. 登录 GitHub，打开个人账户的 [Installed GitHub Apps](https://github.com/settings/installations)。如果仓库属于 Organization，则打开 `https://github.com/organizations/组织名/settings/installations`。
+2. 找到 **Cloudflare Workers and Pages**，进入 `Configure`，滚动到底部选择 `Uninstall`。
+3. 回到 Cloudflare 控制台，进入 `Workers & Pages` → `Create application` → `Pages` → `Connect to Git`。
+4. 点击 `Add account`，重新选择正确的 GitHub 个人账户或 Organization，然后选择 `Install & Authorize`。
+5. GitHub 的 Repository access 选择 `Only select repositories`，确保包含 `wongkimhung/fengya`，或你的实际仓库名。
+6. 回到 Pages 创建流程，重新选择仓库和 `main` 分支。
+
+注意：GitHub 的 `Repository access` 页面只负责授权 Cloudflare 访问仓库，不会显示 Pages 的分支、构建命令或输出目录。完成这里的 `Save` 后，必须回到 Cloudflare 控制台继续 `Workers & Pages` → `Create application` → `Pages` → `Connect to Git`；分支和 Build settings 会在 Cloudflare 的创建项目流程中出现。
+
+如果仓库属于 Organization，必须由 Organization Owner 或拥有 GitHub Apps Manager 权限的成员完成安装；如果 Organization 开启了第三方 App 审批，还需要管理员批准 Cloudflare App。
+
+仍然失败时继续检查：
+
+- GitHub App 是否处于 `Suspended` 状态；如是，在 Configure 页面执行 `Unsuspend`。
+- 该仓库是否已经连接到另一个 Cloudflare 账户下的 Pages 项目；同一个 Git 仓库不能同时用于不同 Cloudflare 账户的 Pages Git 集成，需要先断开或删除旧项目。
+- GitHub App 的 Repository access 是否排除了目标仓库。
+- 退出 GitHub 和 Cloudflare，使用无痕窗口重新授权，避免旧 OAuth 会话干扰。
+
+重新安装 GitHub App 后，不要选择 Direct Upload；本项目需要保持 Git integration，这样 GitHub 的 `main` 提交才能自动触发 Pages 构建。

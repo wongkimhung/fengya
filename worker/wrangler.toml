@@ -5,6 +5,11 @@ name = "karfanjara-form"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 
+[vars]
+# Decap CMS must receive the OAuth result only in this exact Pages origin.
+# Change this if the production Pages/custom domain changes.
+DECAP_CMS_ORIGIN = "https://fengya.pages.dev"
+
 # 敏感配置（TURNSTILE_SECRET_KEY / NOTIFY_URL / RESEND_API_KEY 等）不要写在这里：
 #   npx wrangler secret put TURNSTILE_SECRET_KEY
 #   npx wrangler secret put NOTIFY_URL
@@ -12,6 +17,9 @@ compatibility_date = "2024-11-01"
 #   npx wrangler secret put RESEND_FROM_EMAIL
 #   npx wrangler secret put QUOTE_NOTIFY_TO
 #   npx wrangler secret put GOOGLE_TRANSLATE_API_KEY
+#   npx wrangler secret put GITHUB_OAUTH_ID
+#   npx wrangler secret put GITHUB_OAUTH_SECRET
+#   npx wrangler secret put GITHUB_REPO_PRIVATE  # only for a private GitHub repo
 # 可选环境变量：TRANSLATE_ALLOWED_ORIGIN = "https://www.karfanjara.ge"
 
 [[kv_namespaces]]

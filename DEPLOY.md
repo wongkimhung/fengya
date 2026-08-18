@@ -90,7 +90,7 @@ Decap CMS ──▶ GitHub（唯一内容源）
 ## 5. 内容管理：Decap CMS
 后台位于 `/admin/`，基于 GitHub 后端，无需数据库。
 
-1. **GitHub OAuth 应用**：GitHub → Settings → Developer settings → OAuth Apps，Homepage URL 填海外站点，Callback URL 填 Decap 网关（`https://api.netlify.com/auth/driver/clients/github`）。
+1. **GitHub OAuth 应用**：GitHub → Settings → Developer settings → OAuth Apps，Homepage URL 填 Worker 地址（例如 `https://form.karfanjara.workers.dev`），Callback URL 填 `https://form.karfanjara.workers.dev/callback`；然后按 [Cloudflare Pages 教程的 CMS 登录步骤](./CLOUDFLARE-PAGES.md#41-配置-cms-的-github-登录cloudflare-pages-必需) 配置 `DECAP_AUTH_BASE_URL`、`GITHUB_OAUTH_ID`、`GITHUB_OAUTH_SECRET`。
 2. **登录编辑**：访问海外站点 `https://www.karfanjara.ge/admin/`，GitHub 登录后编辑 Articles / Products / Projects。
 3. **保存 → 提交 Git → 两端平台各自检测到提交 → 自动重新构建**，内容双端上线。
 
@@ -109,7 +109,7 @@ Decap CMS ──▶ GitHub（唯一内容源）
 - Secret 只存于 Worker（`wrangler secret`）与站点环境变量，绝不进仓库/前端。
 - Turnstile 私钥只在 Worker 服务端校验（`challenges.cloudflare.com` 若大陆不稳，可在 Worker 侧替换为腾讯云验证码）。
 - EdgeOne 与 Cloudflare 均开启默认 WAF；表单接口可加限流防刷。
-- Worker 仅开放 `POST /api/contact`、`/api/quote`，其余路径返回 404。
+- Worker 开放表单接口 `POST /api/contact`、`POST /api/quote`、`POST /api/translate`，以及 Decap 登录所需的 `GET /auth`、`GET /callback`；其余路径返回 404。
 
 ---
 
