@@ -1,0 +1,41 @@
+---
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'projects'>;
+}
+const { locale, entry } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const loc = (data: any, field: string) => locale === 'en' ? data[`${field}En`] || data[field] : locale === 'es' ? data[`${field}Es`] || data[`${field}En`] || data[field] : data[field];
+const dateStr = entry.data.completionDate.toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'es' ? 'es-ES' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+});
+---
+
+<a class="pcard reveal" href={p(`/projects/${entry.id}/`)} style="background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+  <div class="blog-card-img">
+    <img class="ph" src={asset(entry.data.cover)} alt={loc(entry.data, 'title')} />
+  </div>
+  <div class="blog-card-body">
+    <div class="date">{loc(entry.data, 'client')} · {dateStr}</div>
+    <h2>{loc(entry.data, 'title')}</h2>
+    <p>{loc(entry.data, 'excerpt')}</p>
+    {
+      entry.data.metrics.length > 0 && (
+        <div style="display:flex;gap:22px;margin-top:8px">
+          {entry.data.metrics.slice(0, 2).map((m) => (
+            <div>
+              <div style="font-family:var(--font-lat);font-weight:700;font-size:22px;color:var(--slate);letter-spacing:-.02em">{m.value}</div>
+              <div style="font-size:12.5px;color:var(--text-mute)">{(locale === 'en' && m.labelEn) || (locale === 'es' && m.labelEs) || m.label}</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</a>

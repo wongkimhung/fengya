@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Home from '../components/Home.astro';
+import { SITE } from '../consts';
+const locale = 'en';
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${SITE.name} | Premium Aluminum Windows & Doors, Glass Systems`}
+  description="Premium aluminum windows and doors, glass railings, office partitions and insect screens. European-standard manufacturing, 15-year warranty, local installation."
+  pathname="/"
+>
+  <Home locale={locale} />
+</BaseLayout>

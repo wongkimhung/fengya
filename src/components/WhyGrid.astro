@@ -1,0 +1,45 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  image?: string;
+}
+const { locale, image = '/images/karfanjara/why-video-poster.jpg' } = Astro.props;
+const t = useTranslations(locale);
+const points = [
+  { n: '01', t: t('why.p1.t'), d: t('why.p1.d') },
+  { n: '02', t: t('why.p2.t'), d: t('why.p2.d') },
+  { n: '03', t: t('why.p3.t'), d: t('why.p3.d') },
+  { n: '04', t: t('why.p4.t'), d: t('why.p4.d') },
+];
+---
+
+<section class="why" id="why">
+  <div class="wrap why-grid">
+    <div class="why-text">
+      <span class="eyebrow">{t('why.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('why.title')}></h2>
+      <div style="margin-top:34px">
+        {points.map((p) => (
+          <div class="point reveal">
+            <span class="pn">{p.n}</span>
+            <div>
+              <h3>{p.t}</h3>
+              <p>{p.d}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="why-visual reveal">
+      <img class="ph" src={asset(image)} alt={locale === 'zh' ? '门窗制造实景' : locale === 'es' ? 'Fabricación de ventanas' : 'Window manufacturing'} />
+      <div class="why-badge">
+        <div class="b1">{t('why.badge.n')}</div>
+        <div class="b2">{t('why.badge.l')}</div>
+      </div>
+    </div>
+  </div>
+</section>

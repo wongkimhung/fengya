@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleDetail from '../../components/ArticleDetail.astro';
+import { getArticles, getArticle, relatedArticles } from '../../lib/content';
+import { useTranslations, type Locale } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  const articles = await getArticles('zh');
+  return articles.map((a) => ({
+    params: { slug: a.id.replace(/(?:en|es)$/, '') },
+    props: { locale: 'en' as Locale, id: a.id.replace(/(?:en|es)$/, '') },
+  }));
+}
+
+const { locale, id } = Astro.props;
+const t = useTranslations(locale);
+const entry = await getArticle(id, locale);
+if (!entry) return Astro.redirect('/articles/');
+
+const all = await getArticles(locale);
+const related = relatedArticles(entry, all, 3);
+const p = (s: string) => s;
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${entry.data.title} | Karfanjara Hilux`}
+  description={entry.data.excerpt}
+  pathname={p(`/articles/${id}/`)}
+  bodyClass="solid-hdr"
+>
+  <ArticleDetail locale={locale} entry={entry} related={related} />
+</BaseLayout>

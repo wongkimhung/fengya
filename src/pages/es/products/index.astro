@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import { getProducts } from '../../../lib/content';
+import { asset } from '../../../consts';
+const locale = 'es';
+const products = await getProducts(locale);
+---
+
+<BaseLayout locale={locale} title="Productos | Karfanjara Hilux" description="Ventanas de aluminio, barandillas de vidrio, mamparas de oficina y mosquiteras." pathname="/es/products/" bodyClass="solid-hdr">
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/products-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/es/">Inicio</a> / Productos</div>
+      <h1>Productos</h1>
+      <p class="lead">Sistemas de ventanas y vidrio para espacios residenciales y comerciales.</p>
+    </div>
+  </section>
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0 clamp(72px,10vw,120px)">
+    <div class="wrap">
+      {products.length === 0 ? <p style="color:var(--text-soft)">Aún no hay productos publicados.</p> : <div class="blog-list">{products.map((pr) => <ProductCard locale={locale} entry={pr} />)}</div>}
+    </div>
+  </section>
+</BaseLayout>

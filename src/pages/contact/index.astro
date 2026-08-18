@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContactSection from '../../components/ContactSection.astro';
+import QuoteForm from '../../components/QuoteForm.astro';
+import { useTranslations } from '../../i18n/utils';
+import Icon from '../../components/Icon.astro';
+const locale = 'en';
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="Contact Us | Karfanjara Hilux"
+  description="Phone, WhatsApp and online enquiry form. We reply within 1 business day."
+  pathname="/contact/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src="/images/contact-cover.svg" alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/">Home</a> / Contact Us</div>
+      <h1>Contact Us</h1>
+      <p class="lead">Free consultation, precise measurement and a fixed price with no hidden costs.</p>
+    </div>
+  </section>
+
+  <!-- 免费报价表单（核心转化入口） -->
+  <QuoteForm locale={locale} />
+
+  <!-- 通用联系表单 -->
+  <ContactSection locale={locale} id="general-contact" />
+
+  <!-- 服务区域 -->
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0">
+    <div class="wrap">
+      <div class="area-chips">
+        <span>Tbilisi</span><span>Kutaisi</span><span>Batumi</span><span>Rustavi</span><span>Gori</span><span>Poti</span>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

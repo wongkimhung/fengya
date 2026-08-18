@@ -1,0 +1,47 @@
+---
+// Decap CMS 后台入口。
+// 访问：
+//   生产/默认：/admin/            （使用 public/admin/config.yml，GitHub OAuth）
+//   本地免鉴权：/admin/?config=config.local.yml （使用 config.local.yml + local_backend）
+// 注意：不要在此页面写业务代码，仅负责加载 Decap CMS 运行时。
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>内容管理 · Karfanjara Hilux</title>
+    <link rel="icon" href="/favicon.svg" />
+  </head>
+  <body>
+    <a class="translation-link" href="/admin/translator/" target="_blank" rel="noopener">打开 Google 翻译助手</a>
+    <script is:inline>
+      // 本地直接访问 /admin/ 时自动切换到 proxy backend，避免 GitHub OAuth。
+      // 生产域名保持使用默认 config.yml 的 GitHub backend。
+      const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+      const adminUrl = new URL(window.location.href);
+      if (localHosts.includes(window.location.hostname) && !adminUrl.searchParams.has('config')) {
+        adminUrl.searchParams.set('config', 'config.local.yml');
+        window.history.replaceState({}, '', adminUrl);
+      }
+      if (localHosts.includes(window.location.hostname)) {
+        const autoEnter = window.setInterval(() => {
+          const login = Array.from(document.querySelectorAll('button')).find((button) => button.textContent?.trim() === 'Login');
+          if (login) {
+            window.clearInterval(autoEnter);
+            login.click();
+          }
+        }, 120);
+        window.setTimeout(() => window.clearInterval(autoEnter), 15000);
+      }
+    </script>
+    <!-- Decap CMS 从同目录下的 config.yml 读取配置；本地入口脚本会自动切换为 config.local.yml。 -->
+    <script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
+  </body>
+</html>
+
+<style is:inline>
+  .translation-link { position: fixed; right: 18px; bottom: 18px; z-index: 9999; padding: 10px 14px; border-radius: 999px; background: #243447; color: #fff; font: 600 13px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; text-decoration: none; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+  .translation-link:hover { background: #b28b57; }
+</style>

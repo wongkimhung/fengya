@@ -1,0 +1,63 @@
+{
+  "brand": {
+    "name": "Karfanjara Hilux",
+    "nameZh": "卡凡贾拉 · 高端门窗",
+    "nameEs": "Karfanjara Hilux · Ventanas premium",
+    "logo": "/images/karfanjara/hilux-logo.png"
+  },
+  "seo": {
+    "en": {
+      "title": "Premium aluminum windows and architectural glass systems",
+      "description": "Premium aluminum windows and doors, glass railings, office partitions and insect screens. European-standard manufacturing, 15-year warranty, local installation."
+    },
+    "zh": {
+      "title": "欧洲标准铝门窗与建筑玻璃系统",
+      "description": "高端铝制门窗、玻璃护栏、办公隔断与防虫纱窗，欧洲标准制造，15 年质保，本地化安装。"
+    },
+    "es": {
+      "title": "Ventanas de aluminio y sistemas de vidrio arquitectónico",
+      "description": "Ventanas y puertas de aluminio, barandillas de vidrio, mamparas de oficina y mosquiteras. Fabricación según estándares europeos, garantía de 15 años e instalación local."
+    }
+  },
+  "translations": {
+    "en": {
+      "hero": {
+        "eyebrow": "Quality · Comfort · Refined Design",
+        "sub": "That you install once and that serves you for decades"
+      },
+      "contact": {
+        "title": "Looking for genuine European-standard windows and doors?",
+        "lead": "Then get in touch and we will prepare a free quote for you"
+      },
+      "footer": {
+        "tagline": "Premium aluminum windows and doors since 2005."
+      }
+    },
+    "zh": {
+      "hero": {
+        "eyebrow": "品质 · 舒适 · 精致设计",
+        "sub": "一次安装，服务数十年"
+      },
+      "contact": {
+        "title": "正在寻找正宗的欧洲标准门窗？",
+        "lead": "联系我们，我们将为您准备免费报价"
+      },
+      "footer": {
+        "tagline": "自 2005 年起的高端铝制门窗。"
+      }
+    },
+    "es": {
+      "hero": {
+        "eyebrow": "Calidad · Confort · Diseño refinado",
+        "sub": "Una instalación para disfrutar durante décadas"
+      },
+      "contact": {
+        "title": "¿Buscas ventanas y puertas con estándar europeo?",
+        "lead": "Escríbenos y prepararemos un presupuesto gratuito"
+      },
+      "footer": {
+        "tagline": "Ventanas y puertas de aluminio premium desde 2005."
+      }
+    }
+  }
+}

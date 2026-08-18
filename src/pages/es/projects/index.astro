@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
+import { getProjects } from '../../../lib/content';
+import { asset } from '../../../consts';
+const locale = 'es';
+const projects = await getProjects(locale);
+---
+
+<BaseLayout locale={locale} title="Proyectos | Karfanjara Hilux" description="Casos reales de viviendas, oficinas y espacios comerciales." pathname="/es/projects/" bodyClass="solid-hdr">
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/projects-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/es/">Inicio</a> / Proyectos</div>
+      <h1>Proyectos</h1>
+      <p class="lead">Casos reales de viviendas, oficinas y espacios comerciales.</p>
+    </div>
+  </section>
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0 clamp(72px,10vw,120px)">
+    <div class="wrap">
+      <div class="blog-list">{projects.map((pr) => <ProjectCard locale={locale} entry={pr} />)}</div>
+    </div>
+  </section>
+</BaseLayout>

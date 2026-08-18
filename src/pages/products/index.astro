@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getProducts } from '../../lib/content';
+import { asset } from '../../consts';
+const locale = 'en';
+const products = await getProducts(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="Products | Karfanjara Hilux"
+  description="Complete range of aluminum windows, glass railings, office partitions and insect screens."
+  pathname="/products/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/products-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/">Home</a> / Products</div>
+      <h1>Products</h1>
+      <p class="lead">Complete range of windows and glass products for residential and commercial spaces.</p>
+    </div>
+  </section>
+
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0 clamp(72px,10vw,120px)">
+    <div class="wrap">
+      {products.length === 0 ? (
+        <p style="color:var(--text-soft)">No content yet. Please publish products in Decap CMS admin.</p>
+      ) : (
+        <div class="blog-list">
+          {products.map((pr) => <ProductCard locale={locale} entry={pr} />)}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import WhyGrid from '../../../components/WhyGrid.astro';
+import StatsBand from '../../../components/StatsBand.astro';
+import Process from '../../../components/Process.astro';
+import { useTranslations } from '../../../i18n/utils';
+import { asset } from '../../../consts';
+const locale = 'zh';
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="关于我们 | Karfanjara Hilux"
+  description="自 2005 年起，专注欧洲标准铝门窗与建筑玻璃系统的制造与交付。"
+  pathname="/zh/about/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/about-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/zh/">首页</a> / 关于我们</div>
+      <h1>关于我们</h1>
+      <p class="lead">自 2005 年起，专注欧洲标准铝门窗与建筑玻璃系统的制造与交付。</p>
+    </div>
+  </section>
+
+  <section class="bp" style="padding-top:clamp(56px,8vw,96px);padding-bottom:0">
+    <div class="wrap section-intro">
+      <span class="eyebrow">{t('intro.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('intro.big')}></h2>
+      <p class="sec-sub" style="margin-top:18px">
+        我们以原厂型材、本地化安装团队与 15 年质保，为住宅与商业客户交付经得起时间与气候考验的门窗系统。
+      </p>
+    </div>
+  </section>
+
+  <WhyGrid locale={locale} />
+  <StatsBand locale={locale} />
+  <Process locale={locale} />
+</BaseLayout>

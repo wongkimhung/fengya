@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WhyGrid from '../../components/WhyGrid.astro';
+import StatsBand from '../../components/StatsBand.astro';
+import Process from '../../components/Process.astro';
+import { useTranslations } from '../../i18n/utils';
+import { asset } from '../../consts';
+const locale = 'en';
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="About Us | Karfanjara Hilux"
+  description="Since 2005, specializing in European-standard aluminum windows, doors and architectural glass systems manufacturing and delivery."
+  pathname="/about/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/about-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/">Home</a> / About Us</div>
+      <h1>About Us</h1>
+      <p class="lead">Since 2005, specializing in European-standard aluminum windows, doors and architectural glass systems manufacturing and delivery.</p>
+    </div>
+  </section>
+
+  <section class="bp" style="padding-top:clamp(56px,8vw,96px);padding-bottom:0">
+    <div class="wrap section-intro">
+      <span class="eyebrow">{t('intro.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('intro.big')}></h2>
+      <p class="sec-sub" style="margin-top:18px">
+        We deliver window systems that stand the test of time and weather for residential and commercial clients, with factory-direct profiles, local installation teams and a 15-year warranty.
+      </p>
+    </div>
+  </section>
+
+  <WhyGrid locale={locale} />
+  <StatsBand locale={locale} />
+  <Process locale={locale} />
+</BaseLayout>

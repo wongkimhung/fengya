@@ -1,0 +1,130 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset, SITE } from '../consts';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'projects'>;
+}
+const { locale, entry } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const loc = (data: any, field: string) => locale === 'en' ? data[`${field}En`] || data[field] : locale === 'es' ? data[`${field}Es`] || data[`${field}En`] || data[field] : data[field];
+const data = entry.data;
+
+const isEn = locale === 'en';
+let Content: any = null;
+if (!(isEn && data.bodyEn)) {
+  ({ Content } = await render(entry));
+}
+const gallery = [data.cover, ...data.gallery].filter(Boolean).map((g: string) => asset(g));
+const pdf = data.caseStudyPdf ? asset(data.caseStudyPdf) : null;
+const dateStr = data.completionDate.toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'es' ? 'es-ES' : 'en-US', {
+  year: 'numeric',
+  month: 'long',
+});
+const waText = locale === 'zh'
+  ? '您好，我想了解项目：' + loc(data, 'title')
+  : locale === 'es'
+    ? 'Hola, me interesa este proyecto: ' + loc(data, 'title')
+    : 'Hello, I am interested in the project: ' + loc(data, 'title');
+---
+
+<article class="solid-hdr">
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset(data.cover)} alt={loc(data, 'title')} /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb">
+        <a href={p('/projects/')}>{locale === 'zh' ? '项目案例' : locale === 'es' ? 'Proyectos' : 'Projects'}</a> / {loc(data, 'client')}
+      </div>
+      <h1>{loc(data, 'title')}</h1>
+      <p class="lead">{loc(data, 'client')} · {dateStr}</p>
+    </div>
+  </section>
+
+  <!-- 量化成果高亮 -->
+  {
+    data.metrics.length > 0 && (
+      <section class="stats">
+        <div class="wrap">
+          <div class="stats-grid">
+            {data.metrics.map((m: any, i: number) => (
+              <div class={`col${i > 0 ? ' reveal' : ''}`}>
+                <div class="n">{m.value}</div>
+                <div class="l">{(locale === 'en' && m.labelEn) || (locale === 'es' && m.labelEs) || m.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 正文 -->
+  <section class="bp" style="padding-top:clamp(56px,8vw,96px)">
+    <div class="wrap section-intro">
+      {isEn && data.bodyEn ? (
+        <div class="bp-body" style="padding-top:0;max-width:820px" set:html={data.bodyEn} />
+      ) : (
+        <div class="bp-body" style="padding-top:0;max-width:820px"><Content /></div>
+      )}
+    </div>
+  </section>
+
+  <!-- 图集（Lightbox） -->
+  {
+    gallery.length > 0 && (
+      <section style="background:var(--paper);padding:clamp(40px,6vw,72px) 0">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow">{locale === 'zh' ? '项目实景' : locale === 'es' ? 'En obra' : 'On site'}</span>
+            <h2 class="sec-title">{locale === 'zh' ? '现场图集' : locale === 'es' ? 'Galería de fotos' : 'Photo gallery'}</h2>
+          </div>
+          <div class="rgal">
+            {gallery.map((g: string) => (
+              <button class="item" type="button" aria-label={loc(data, 'title')}>
+                <img src={g} alt={loc(data, 'title')} />
+                <span class="zoombadge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 白皮书下载 -->
+  {
+    pdf && (
+      <section style="background:var(--paper-2);padding:clamp(40px,6vw,72px) 0">
+        <div class="wrap">
+          <div class="contact-cta reveal" style="flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px">
+            <div>
+              <h3>{locale === 'zh' ? '案例白皮书' : locale === 'es' ? 'Caso de estudio' : 'Case study'}</h3>
+              <p>{locale === 'zh' ? '下载完整 PDF 白皮书，含方案、施工与成果数据。' : locale === 'es' ? 'Descarga el PDF completo con el plan, la ejecución y los resultados.' : 'Download the full PDF case study with plan, build and results.'}</p>
+            </div>
+            <a class="btn btn-acc" href={pdf} target="_blank" rel="noopener">
+              <Icon name="download" size={16} /> {locale === 'zh' ? '一键下载' : locale === 'es' ? 'Descargar' : 'Download'}
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 咨询 CTA -->
+  <section style="background:var(--sand);padding:clamp(56px,8vw,100px) 0">
+    <div class="wrap contact-cta-center">
+      <h2 class="sec-title">{locale === 'zh' ? '开启你的下一个项目' : locale === 'es' ? 'Comienza tu próximo proyecto' : 'Start your next project'}</h2>
+      <p class="lead">{locale === 'zh' ? '告诉我们需求，获取定制方案与报价。' : locale === 'es' ? 'Cuéntanos tus necesidades y recibe un plan y presupuesto a medida.' : 'Tell us your needs — get a tailored plan and quote.'}</p>
+      <div class="contact-actions">
+        <a class="btn btn-acc" href={p('/contact/')}>{t('cta.quote')}</a>
+        <a class="btn btn-ghost" href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(waText)}`}>{t('cta.whatsapp')}</a>
+      </div>
+    </div>
+  </section>
+</article>

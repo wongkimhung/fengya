@@ -1,0 +1,149 @@
+---
+import { SITE } from '../consts';
+import { useTranslations, type Locale } from '../i18n/utils';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  id?: string;
+  compact?: boolean;
+}
+const { locale, id = 'contact', compact = false } = Astro.props;
+const t = useTranslations(locale);
+
+// 联系信息在【运行时】由 /data/contact.json 动态填充（见 src/scripts/main.js）。
+// 此处用 SITE 常量作为默认值（服务端渲染，保证无 JS 时也能拨号/加 WhatsApp）。
+const phone = SITE.phone;
+const whatsapp = SITE.whatsapp;
+
+const waText =
+  locale === 'zh'
+    ? '您好，我想咨询欧洲标准铝门窗产品。'
+    : locale === 'es'
+      ? 'Hola, me interesan sus ventanas de aluminio con estándar europeo.'
+    : 'Hello, I am interested in your European-standard aluminum windows.';
+---
+
+<section class="contact" id={id}>
+  <div class="wrap contact-cta-center reveal">
+    <h2>{t('contact.title')}</h2>
+    <p class="lead">{t('contact.lead')}</p>
+
+    <!-- 首页保持参考站的轻量 CTA；完整表单保留在 /contact/ 页面。 -->
+    {!compact && <form data-contact class="contact-form" method="POST" action={`${SITE.formEndpoint}/api/contact`}>
+      <div class="form-row">
+        <div class="field">
+          <label for="cf-name">{t('contact.name')} *</label>
+          <input id="cf-name" name="name" type="text" required placeholder={locale === 'zh' ? '您的姓名' : locale === 'es' ? 'Tu nombre' : 'Your name'} />
+        </div>
+        <div class="field">
+          <label for="cf-phone">{t('contact.phone')} *</label>
+          <input id="cf-phone" name="phone" type="tel" required placeholder="+995 XXX XX XX XX" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="cf-email">{t('contact.email')}</label>
+        <input id="cf-email" name="email" type="email" placeholder="name@example.com" />
+      </div>
+      <div class="field">
+        <label for="cf-msg">{t('contact.message')} *</label>
+        <textarea id="cf-msg" name="message" rows="4" required placeholder={locale === 'zh' ? '请描述您的项目需求…' : locale === 'es' ? 'Describe las necesidades de tu proyecto…' : 'Describe your project needs…'}></textarea>
+      </div>
+      <!-- Turnstile（站点公钥在构建时注入） -->
+      <div class="cf-turnstile" data-sitekey={SITE.turnstileSiteKey}></div>
+      <button type="submit" class="btn btn-acc" data-label={locale === 'zh' ? '提交' : locale === 'es' ? 'Enviar' : 'Submit'}>
+        {locale === 'zh' ? '提交咨询' : locale === 'es' ? 'Enviar consulta' : 'Send Enquiry'}
+      </button>
+      <p class="form-ok" style="display:none">{t('contact.ok')}</p>
+      <p class="minorder">{t('contact.note')}</p>
+    </form>}
+
+    <div class="contact-actions">
+      <a class="btn btn-acc" href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(waText)}`} data-cfg-link="whatsapp"><Icon name="whatsapp" size={18} />WhatsApp</a>
+      <a class="btn btn-ghost lat" href={`tel:${phone}`} data-cfg-link="tel"><Icon name="phone" size={17} />{phone}</a>
+    </div>
+    {compact && <p class="minorder">{t('contact.minorder')}</p>}
+  </div>
+</section>
+
+<style>
+  .contact-form {
+    margin-top: 32px;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 520px) {
+    .form-row { grid-template-columns: 1fr; }
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .field input,
+  .field textarea {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 15px;
+    background: var(--surface);
+    color: var(--ink);
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--camel);
+    box-shadow: 0 0 0 3px rgba(197, 150, 95, 0.12);
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .form-ok {
+    margin-top: 8px;
+    padding: 12px 16px;
+    background: #ecfdf5;
+    color: #065f46;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .cf-turnstile { margin: 8px 0; overflow: hidden; border-radius: 6px; }
+  .contact-cta-center {
+    max-width: 900px;
+    text-align: center;
+  }
+  .contact-cta-center h2 {
+    max-width: 18ch;
+    margin-inline: auto;
+    font-size: clamp(30px, 4.6vw, 56px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+  }
+  .contact-cta-center > .lead {
+    max-width: 48ch;
+    margin: 20px auto 0;
+    color: var(--text-soft);
+    font-size: 17px;
+  }
+  .contact-cta-center .contact-actions {
+    justify-content: center;
+    margin-top: 32px;
+  }
+  .contact-cta-center .minorder {
+    margin-top: 26px;
+  }
+</style>

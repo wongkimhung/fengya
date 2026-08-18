@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Home from '../../components/Home.astro';
+import { SITE } from '../../consts';
+const locale = 'es';
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${SITE.name} | Ventanas y puertas de aluminio premium`}
+  description="Ventanas y puertas de aluminio, barandillas de vidrio, mamparas de oficina y mosquiteras con estándar europeo."
+  pathname="/es/"
+>
+  <Home locale={locale} />
+</BaseLayout>

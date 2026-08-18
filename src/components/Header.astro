@@ -1,0 +1,98 @@
+---
+import { NAV, SITE } from '../consts';
+import { useTranslations, getAlternatePath, localePath, type Locale } from '../i18n/utils';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  pathname: string;
+}
+const { locale, pathname } = Astro.props;
+const t = useTranslations(locale);
+
+// 联系信息在【运行时】由 /data/contact.json 动态填充（见 src/scripts/main.js）。
+// 此处用 SITE 常量作为默认值（服务端渲染，保证无 JS 时也能拨号/加 WhatsApp）。
+const phone = SITE.phone;
+const whatsapp = SITE.whatsapp;
+
+const isHome = pathname === localePath(locale, '/');
+const homePath = localePath(locale, '/');
+const logoHref = isHome ? '#top' : homePath;
+const contactHref = isHome ? '#contact' : `${homePath}#contact`;
+
+// 内页导航回到对应语言首页的锚点；首页保留原生平滑滚动。
+const navHtml = NAV.map((item) => ({
+  href: (() => {
+    const target = item.href(locale);
+    return target.startsWith('#') && !isHome ? `${homePath}${target}` : target;
+  })(),
+  label: t(item.key),
+}));
+---
+
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-row">
+    <a class="logo" href={logoHref} aria-label={SITE.name}>
+      <img class="logo-img" src={SITE.logo} alt={SITE.name} />
+    </a>
+
+    <nav class="nav" aria-label="primary">
+      {
+        navHtml.map((n) => (
+          <a href={n.href}>{n.label}</a>
+        ))
+      }
+    </nav>
+
+    <div class="hdr-cta">
+      <span class="lang">
+        <a href={getAlternatePath(pathname, 'zh')} class={locale === 'zh' ? 'on' : ''} hreflang="zh">中文</a>
+        <span aria-hidden="true"> · </span>
+        <a href={getAlternatePath(pathname, 'en')} class={locale === 'en' ? 'on' : ''} hreflang="en">EN</a>
+        <span aria-hidden="true"> · </span>
+        <a href={getAlternatePath(pathname, 'es')} class={locale === 'es' ? 'on' : ''} hreflang="es">ES</a>
+      </span>
+      <a class="btn btn-acc" href={contactHref}>
+        {t('cta.quote')}
+      </a>
+      <button class="burger" id="burger" aria-label="菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  {
+    navHtml.map((n) => (
+      <a href={n.href}>{n.label}</a>
+    ))
+  }
+  <div class="mm-foot">
+      <a class="btn btn-acc" href={`tel:${phone}`} data-cfg-link="tel">
+        <Icon name="phone" size={16} /> {t('cta.call')}
+      </a>
+      <a
+        class="btn btn-ghost"
+        href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
+            locale === 'zh'
+              ? '您好，我想咨询欧洲标准铝门窗产品。'
+              : locale === 'es'
+                ? 'Hola, me interesan sus ventanas de aluminio con estándar europeo.'
+                : 'Hello, I am interested in your European-standard aluminum windows.'
+        )}`}
+        data-cfg-link="whatsapp"
+      >
+        <Icon name="whatsapp" size={16} /> {t('cta.whatsapp')}
+      </a>
+  </div>
+  <div class="mm-lang">
+    <a href={getAlternatePath(pathname, 'zh')} class={locale === 'zh' ? 'on' : ''}>中文</a>
+    <span>/</span>
+    <a href={getAlternatePath(pathname, 'en')} class={locale === 'en' ? 'on' : ''}>EN</a>
+    <span>/</span>
+    <a href={getAlternatePath(pathname, 'es')} class={locale === 'es' ? 'on' : ''}>ES</a>
+  </div>
+</div>
+
+<div class="progress" id="progress"></div>

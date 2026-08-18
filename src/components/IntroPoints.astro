@@ -1,0 +1,22 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const points = t('intro.points').split('|');
+---
+
+<section class="intro">
+  <div class="wrap">
+    <span class="eyebrow">{t('intro.eyebrow')}</span>
+    <h2 class="big" set:html={t('intro.big')}></h2>
+    <div class="intro-points">
+      {points.map((pt) => (
+        <span><Icon name="check" />{pt}</span>
+      ))}
+    </div>
+  </div>
+</section>

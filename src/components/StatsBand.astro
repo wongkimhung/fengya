@@ -1,0 +1,28 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const stats = [
+  { n: t('stats.n1'), l: t('stats.l1') },
+  { n: t('stats.n2'), l: t('stats.l2') },
+  { n: t('stats.n3'), l: t('stats.l3') },
+];
+---
+
+<section class="stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      {
+        stats.map((s, i) => (
+          <div class={`col${i > 0 ? ' reveal' : ''}`}>
+            <div class="n">{s.n}</div>
+            <div class="l">{s.l}</div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,104 @@
+---
+import { NAV, SITE } from '../consts';
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  pathname: string;
+}
+const { locale, pathname } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const isHome = pathname === localePath(locale, '/');
+const navHref = (item: (typeof NAV)[number]) => {
+  const target = item.href(locale);
+  return target.startsWith('#') && !isHome ? `${p('/')}${target}` : target;
+};
+
+// 联系信息在【运行时】由 /data/contact.json 动态填充（见 src/scripts/main.js）。
+// 此处用 SITE 常量作为服务端渲染默认值，保证 SEO 与无 JS 时也有内容。
+const phone = SITE.phone;
+const email = SITE.email;
+const whatsapp = SITE.whatsapp;
+const hours = locale === 'zh' ? '周一至周六 09:00-18:00，周日休息' : locale === 'es' ? 'Lun-Sáb 09:00-18:00, domingo cerrado' : 'Mon-Sat 09:00-18:00, Sunday closed';
+const tagline = locale === 'zh' ? t('footer.tagline') : t('footer.tagline');
+
+const products = [
+  { label: locale === 'zh' ? '铝门窗系列' : locale === 'es' ? 'Ventanas y puertas de aluminio' : 'Aluminum Windows & Doors', href: p('/products/aluminis-karfanjara/') },
+  { label: locale === 'zh' ? '玻璃护栏' : locale === 'es' ? 'Barandillas de vidrio' : 'Glass Railings', href: p('/products/minis-moajiri/') },
+  { label: locale === 'zh' ? '办公隔断' : locale === 'es' ? 'Mamparas de oficina' : 'Office Glass Partitions', href: p('/products/saofise-vitraji/') },
+  { label: locale === 'zh' ? '折叠防虫纱窗' : locale === 'es' ? 'Mosquiteras plisadas' : 'Insect Pleated Screens', href: p('/products/gofrirebuli-badeebi/') },
+];
+const socials = [
+  { name: 'facebook', href: SITE.social.facebook, icon: 'facebook' },
+  { name: 'instagram', href: SITE.social.instagram, icon: 'instagram' },
+  { name: 'tiktok', href: SITE.social.tiktok, icon: 'tiktok' },
+  { name: 'youtube', href: SITE.social.youtube, icon: 'youtube' },
+];
+---
+
+<footer class="ft">
+  <div class="wrap">
+    <div class="ft-grid">
+      <div class="ft-brand">
+        <a class="logo" href={p('/')} style="color:#fff">
+          <img class="logo-img" src={SITE.logo} alt={SITE.name} />
+        </a>
+        <p data-cfg="tagline">{tagline}</p>
+        <div class="socials">
+          {
+            socials.map((s) => (
+              <a class="soc" href={s.href} data-cfg-link={s.name} target="_blank" rel="noopener" aria-label={s.name}>
+                <Icon name={s.icon} size={18} />
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <h4>{t('footer.nav')}</h4>
+        <ul>
+          {
+            NAV.map((item) => (
+              <li><a href={navHref(item)}>{t(item.key)}</a></li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div>
+        <h4>{t('footer.products')}</h4>
+        <ul>
+          {products.map((pr) => <li><a href={pr.href}>{pr.label}</a></li>)}
+        </ul>
+      </div>
+
+      <div>
+        <h4>{t('footer.contact')}</h4>
+        <div class="nap">
+          <Icon name="phone" size={16} />
+          <a href={`tel:${phone}`} data-cfg-link="tel" data-cfg="phone">{phone}</a>
+        </div>
+        <div class="nap">
+          <Icon name="mail" size={16} />
+          <a href={`mailto:${email}`} data-cfg-link="email" data-cfg="email">{email}</a>
+        </div>
+        <div class="nap">
+          <Icon name="whatsapp" size={16} />
+          <a href={`https://wa.me/${whatsapp}`} data-cfg-link="whatsapp">WhatsApp</a>
+        </div>
+        <div class="nap">
+          <Icon name="clock" size={16} />
+          <span data-cfg="hours" set:html={hours.replace(',', '<br />')}></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ft-bottom">
+      <span>© {new Date().getFullYear()} {SITE.name}. {t('footer.rights')}</span>
+      <span>{t('footer.built')}</span>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,58 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const sys = [
+  {
+    k: locale === 'zh' ? '铝材' : locale === 'es' ? 'Aluminio' : 'Aluminum',
+    h: 'ASISTAL TH62',
+    p: locale === 'zh'
+      ? '欧洲标准加厚铝型材，配备隔热系统。'
+      : locale === 'es'
+        ? 'Perfil de aluminio europeo de pared gruesa con aislamiento térmico.'
+      : 'European-standard thick-walled aluminum profile with thermal insulation.',
+  },
+  {
+    k: locale === 'zh' ? '五金' : locale === 'es' ? 'Herrajes' : 'Hardware',
+    h: 'Roto',
+    p: locale === 'zh'
+      ? '可靠的德国锁具和耐用的机械装置。'
+      : locale === 'es'
+        ? 'Cerraduras alemanas fiables y mecanismos duraderos.'
+      : 'Reliable German locks and durable mechanisms.',
+  },
+  {
+    k: locale === 'zh' ? '玻璃' : locale === 'es' ? 'Vidrio' : 'Glass',
+    h: locale === 'zh' ? '节能玻璃' : locale === 'es' ? 'Vidrio eficiente' : 'Energy-Efficient Glass',
+    p: locale === 'zh'
+      ? '节能隔音玻璃单元，可将供暖和制冷费用降低高达 30%。'
+      : locale === 'es'
+        ? 'Unidad de vidrio eficiente y acústica que reduce hasta un 30% los costes de climatización.'
+      : 'An energy-efficient, sound-insulating glass unit that cuts heating and cooling bills by up to 30%.',
+  },
+];
+---
+
+<section class="systems" id="systems">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{t('systems.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('systems.title')}></h2>
+      <p class="sec-sub">{t('systems.sub')}</p>
+    </div>
+    <div class="sys-grid">
+      {
+        sys.map((s) => (
+          <div class="sys reveal">
+            <div class="k">{s.k}</div>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ArticleCard from '../../../components/ArticleCard.astro';
+import { getArticles } from '../../../lib/content';
+import { asset } from '../../../consts';
+const locale = 'es';
+const articles = await getArticles(locale);
+---
+
+<BaseLayout locale={locale} title="Noticias | Karfanjara Hilux" description="Noticias de la empresa, actualidad del sector y cobertura de prensa." pathname="/es/articles/" bodyClass="solid-hdr">
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/articles-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/es/">Inicio</a> / Noticias</div>
+      <h1>Noticias</h1>
+      <p class="lead">Noticias de la empresa, actualidad del sector y cobertura de prensa.</p>
+    </div>
+  </section>
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0 clamp(72px,10vw,120px)">
+    <div class="wrap">
+      {articles.length === 0 ? <p style="color:var(--text-soft)">Aún no hay noticias publicadas.</p> : <div class="blog-list">{articles.map((a) => <ArticleCard locale={locale} entry={a} />)}</div>}
+    </div>
+  </section>
+</BaseLayout>

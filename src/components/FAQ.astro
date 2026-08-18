@@ -1,0 +1,58 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const faqs =
+  locale === 'zh'
+    ? [
+        { q: '起订量是多少？', a: '我们的最小起订量为 20 ㎡，低于该面积的项目暂不接单。' },
+        { q: '你们提供多长质保？', a: '对所安装门窗提供 15 年质保：不变形、不漏风雨、不褪色，并长期保持能效。' },
+        { q: '一个订单大概多久？', a: '视工程量与季节而定，标准订单在测量后 2–4 周交付，具体时间在咨询时确认。' },
+        { q: '可以提供彩色型材吗？', a: '可以，按项目需求提供多种颜色，彩色方案需要更长的生产与备料周期。' },
+        { q: '只服务第比利斯吗？', a: '我们主要服务第比利斯及周边，视订单规模也会前往外地，欢迎来电沟通细节。' },
+      ]
+    : locale === 'es'
+    ? [
+        { q: '¿Cuál es el pedido mínimo?', a: 'El pedido mínimo comienza en 20 m². No fabricamos proyectos más pequeños.' },
+        { q: '¿Qué garantía ofrecen?', a: 'Ofrecemos 15 años de garantía: las ventanas no se deforman, no filtran, no pierden el color y mantienen su eficiencia.' },
+        { q: '¿Cuánto tarda un pedido?', a: 'Depende del volumen y la temporada. Un pedido estándar está listo 2–4 semanas después de la medición.' },
+        { q: '¿Hay ventanas de colores?', a: 'Sí, ofrecemos diferentes colores según el proyecto; las opciones de color requieren más tiempo.' },
+        { q: '¿Trabajan en toda Georgia?', a: 'Principalmente en Tiflis y alrededores, aunque también viajamos a otras regiones según el tamaño del pedido.' },
+      ]
+    : [
+        { q: 'What is the minimum order?', a: 'Our minimum order starts at 20 m². We do not produce for projects smaller than that.' },
+        { q: 'What warranty do you give?', a: 'A 15-year warranty that the windows and doors we install will not warp, leak, fade and will keep their energy efficiency.' },
+        { q: 'How long does an order take?', a: 'It depends on volume and season. A standard order is ready 2–4 weeks after measurement; exact timing is confirmed during consultation.' },
+        { q: 'Do you have colored windows?', a: 'Yes, different colors are available per project; a colored option needs more time and resources.' },
+        { q: 'Do you work across Georgia?', a: 'Mostly Tbilisi and the area, but depending on order size we also travel to the regions. Get in touch.' },
+      ];
+---
+
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{t('faq.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('faq.title')}></h2>
+    </div>
+    <div class="faq-wrap">
+      {
+        faqs.map((f) => (
+          <div class="q reveal">
+            <button class="q-btn" type="button" aria-expanded="false">
+              {f.q}
+              <span class="q-ico" />
+            </button>
+            <div class="q-body">
+              <div><p>{f.a}</p></div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

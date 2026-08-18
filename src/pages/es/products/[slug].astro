@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProductDetail from '../../../components/ProductDetail.astro';
+import { getProduct } from '../../../lib/content';
+import type { Locale } from '../../../i18n/ui';
+
+export async function getStaticPaths() {
+  const { getCollection } = await import('astro:content');
+  const all = await getCollection('products');
+  return all.map((entry) => ({ params: { slug: entry.id }, props: { locale: 'es' as Locale, id: entry.id } }));
+}
+
+const { locale, id } = Astro.props;
+const entry = await getProduct(id);
+if (!entry) return Astro.redirect('/es/products/');
+---
+
+<BaseLayout locale={locale} title={`${entry.data.titleEs || entry.data.titleEn || entry.data.title} | Karfanjara Hilux`} description={entry.data.excerptEs || entry.data.excerptEn || entry.data.excerpt} pathname={`/es/products/${id}/`} bodyClass="solid-hdr">
+  <ProductDetail locale={locale} entry={entry} />
+</BaseLayout>

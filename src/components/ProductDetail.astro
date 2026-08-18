@@ -1,0 +1,151 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset, SITE } from '../consts';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'products'>;
+}
+const { locale, entry } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const loc = (data: any, field: string) => locale === 'en' ? data[`${field}En`] || data[field] : locale === 'es' ? data[`${field}Es`] || data[`${field}En`] || data[field] : data[field];
+const data = entry.data;
+const detailTitle =
+  locale === 'en' && data.detailTitleEn
+    ? data.detailTitleEn
+    : locale === 'es' && data.detailTitleEs
+      ? data.detailTitleEs
+    : locale === 'zh' && data.detailTitle
+      ? data.detailTitle
+      : loc(data, 'title');
+
+const bro = data.brochure ? asset(data.brochure) : null;
+const gallery = data.gallery.map((g: string) => asset(g));
+const waText = locale === 'zh'
+  ? '您好，我想咨询：' + detailTitle
+  : locale === 'es'
+    ? 'Hola, me interesa: ' + detailTitle
+    : 'Hello, I am interested in: ' + detailTitle;
+---
+
+<article class="solid-hdr">
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset(data.mainImage)} alt={detailTitle} /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb">
+        <a href={p('/products/')}>{locale === 'zh' ? '产品中心' : locale === 'es' ? 'Productos' : 'Products'}</a> / {loc(data, 'category')}
+      </div>
+      <h1>{detailTitle}</h1>
+      <p class="lead">{loc(data, 'excerpt')}</p>
+      <div class="hero-ctas">
+        <a class="btn btn-acc" href={p('/contact/')}>{t('cta.quote')}</a>
+        <a class="btn btn-ghost" href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(waText)}`}>
+          <Icon name="whatsapp" size={16} /> {t('cta.whatsapp')}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {
+    (data.advantages.length > 0 || data.advantagesEn.length > 0 || data.advantagesEs.length > 0) && (
+      <section class="product-advantages">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow">{locale === 'zh' ? '产品优势' : locale === 'es' ? 'Ventajas' : 'Advantages'}</span>
+            <h2 class="sec-title">
+              {(locale === 'en' && data.advantagesTitleEn) || (locale === 'es' && data.advantagesTitleEs) || data.advantagesTitle || (locale === 'zh' ? '品质，历久弥新' : locale === 'es' ? 'Calidad que dura' : 'Quality that lasts')}
+            </h2>
+          </div>
+          <div class="benefits">
+            {(locale === 'en' && data.advantagesEn.length > 0 ? data.advantagesEn : locale === 'es' && data.advantagesEs.length > 0 ? data.advantagesEs : locale === 'es' && data.advantagesEn.length > 0 ? data.advantagesEn : data.advantages).map((item: string) => (
+              <div class="benefit reveal">
+                <span class="bi"><Icon name="check" size={15} /></span>
+                <p>{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 规格参数表 -->
+  {
+    data.specs.length > 0 && (
+      <section class="specs">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow">{locale === 'zh' ? '技术规格' : locale === 'es' ? 'Especificaciones' : 'Specifications'}</span>
+            <h2 class="sec-title">{locale === 'zh' ? '动态规格参数' : locale === 'es' ? 'Especificaciones clave' : 'Key specifications'}</h2>
+          </div>
+          <ul class="speclist">
+            {data.specs.map((s: any) => (
+              <li>
+                <span><b>{(locale === 'en' && s.keyEn) || (locale === 'es' && s.keyEs) || s.key}</b></span>
+                <span>{(locale === 'en' && s.valueEn) || (locale === 'es' && s.valueEs) || (locale === 'es' && s.valueEn) || s.value}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 图集（Lightbox 放大） -->
+  {
+    gallery.length > 0 && (
+      <section style="background:var(--paper);padding:clamp(56px,8vw,100px) 0">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow">{locale === 'zh' ? '产品图集' : locale === 'es' ? 'Galería' : 'Gallery'}</span>
+            <h2 class="sec-title">{locale === 'zh' ? '细节与实景' : locale === 'es' ? 'Detalles y obra' : 'Details & on-site'}</h2>
+          </div>
+          <div class="rgal">
+            {gallery.map((g: string) => (
+                <button class="item" type="button" aria-label={detailTitle}>
+                <img src={g} alt={detailTitle} />
+                <span class="zoombadge">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 手册下载 -->
+  {
+    bro && (
+      <section style="background:var(--paper-2);padding:clamp(40px,6vw,72px) 0">
+        <div class="wrap">
+          <div class="contact-cta reveal" style="flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px">
+            <div>
+              <h3>{locale === 'zh' ? '产品手册 / Brochure' : locale === 'es' ? 'Folleto del producto' : 'Product brochure'}</h3>
+              <p>{locale === 'zh' ? '下载完整 PDF 手册，含尺寸、型材与配置说明。' : locale === 'es' ? 'Descarga el PDF con medidas, perfiles y opciones.' : 'Download the full PDF brochure with sizes, profiles and options.'}</p>
+            </div>
+            <a class="btn btn-acc" href={bro} target="_blank" rel="noopener">
+              <Icon name="download" size={16} /> {locale === 'zh' ? '一键下载' : locale === 'es' ? 'Descargar' : 'Download'}
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 底部咨询 CTA -->
+  <section id="contact" style="background:var(--sand);padding:clamp(56px,8vw,100px) 0">
+    <div class="wrap contact-cta-center">
+      <h2 class="sec-title">{locale === 'zh' ? '为你的项目获取报价' : locale === 'es' ? 'Obtén un presupuesto para tu proyecto' : 'Get a quote for your project'}</h2>
+      <p class="lead">{locale === 'zh' ? '填写需求，我们将在 1 个工作日内回复。' : locale === 'es' ? 'Cuéntanos tus necesidades y responderemos en un día laborable.' : 'Tell us your needs — we reply within 1 business day.'}</p>
+      <div class="contact-actions">
+        <a class="btn btn-acc" href={p('/contact/')}>{t('cta.quote')}</a>
+        <a class="btn btn-ghost" href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(waText)}`}>{t('cta.whatsapp')}</a>
+      </div>
+    </div>
+  </section>
+</article>

@@ -1,0 +1,39 @@
+node_modules/
+dist/
+.astro/
+node_modules/.astro/
+node_modules/.vite/
+.DS_Store
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+worker/.dev.vars
+
+# Build, test and tool caches
+coverage/
+.cache/
+.tmp/
+.wrangler/
+worker/.wrangler/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Local editor / OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local agent/workbench notes (content files under src/ and public/ remain tracked)
+.workbuddy/
+
+# CMS content is intentionally versioned: src/content/, public/data/ and public/uploads/
+.vscode
+.workbuddy
+.workbuddy/memory/

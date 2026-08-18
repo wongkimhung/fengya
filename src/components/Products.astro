@@ -1,0 +1,88 @@
+---
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import Icon from './Icon.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+  feature?: CollectionEntry<'products'>;
+  grid?: CollectionEntry<'products'>[];
+}
+const { locale, feature, grid = [] } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const loc = (data: any, field: string) => locale === 'en' ? data[`${field}En`] || data[field] : locale === 'es' ? data[`${field}Es`] || data[`${field}En`] || data[field] : data[field];
+
+// 参考网站产品图片映射
+const productImages: Record<string, string> = {
+  'aluminum': '/images/karfanjara/aluminum-hero.jpg',
+  'railing': '/images/karfanjara/railing-hero.jpg',
+  'office': '/images/karfanjara/office-hero.jpg',
+  'screen': '/images/karfanjara/gofre-hero.jpg',
+  'upvc': '/images/karfanjara/rehau-metaloplast.jpg',
+};
+---
+
+<section class="products on-dark" id="products">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{t('products.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('products.title')}></h2>
+      <p class="sec-sub">{t('products.sub')}</p>
+    </div>
+
+    {
+      feature && (
+        <a class="feature reveal" href={p(`/products/${feature.id}/`)}>
+          <div class="feature-img">
+            <img class="ph" src={asset(feature.data.mainImage)} alt={loc(feature.data, 'title')} />
+          </div>
+          <div class="feature-body">
+            <span class="tag">{t('products.tag.feature')}</span>
+            <h3>{loc(feature.data, 'title')}</h3>
+            <p>{loc(feature.data, 'excerpt')}</p>
+            <span class="arrow">
+              {t('cta.learn')} <Icon name="arrow" size={16} />
+            </span>
+          </div>
+        </a>
+      )
+    }
+
+    {
+      grid.length > 0 && (
+        <div class="pgrid">
+          {grid.map((pr) => (
+            <a class="pcard reveal" href={p(`/products/${pr.id}/`)}>
+              <div class="pcard-img">
+                <img class="ph" src={asset(pr.data.mainImage)} alt={loc(pr.data, 'title')} />
+              </div>
+              <div class="pcard-body">
+                <span class="tag">{loc(pr.data, 'category')}</span>
+                <h3>{loc(pr.data, 'title')}</h3>
+                <p>{loc(pr.data, 'excerpt')}</p>
+                <span class="arrow">
+                  {t('cta.learn')} <Icon name="arrow" size={16} />
+                </span>
+              </div>
+            </a>
+          ))}
+          <a class="pcard pcard-extra reveal" href={p('/contact/')}>
+            <div class="pcard-img">
+              <img class="ph" src={asset(productImages.upvc)} alt={locale === 'zh' ? 'REHAU 金属塑钢门窗' : locale === 'es' ? 'Ventanas metal-plásticas REHAU' : 'REHAU metal-plastic windows'} />
+            </div>
+            <div class="pcard-body">
+                <span class="tag">{locale === 'zh' ? '德国 / REHAU' : locale === 'es' ? 'Alemán / REHAU' : 'German / REHAU'}</span>
+                <h3>{locale === 'zh' ? '金属塑钢门窗' : locale === 'es' ? 'Ventanas metal-plásticas' : 'Metal-plastic windows'}</h3>
+                <p>{locale === 'zh' ? '五腔德国 REHAU 系统，提供白色与彩色方案。' : locale === 'es' ? 'Sistema alemán REHAU de cinco cámaras, disponible en blanco y colores.' : 'Five-chamber German REHAU system, available in white and coloured options.'}</p>
+              <span class="arrow">
+                {locale === 'zh' ? '联系我们' : locale === 'es' ? 'Contactar' : 'Get in touch'} <Icon name="arrow" size={16} />
+              </span>
+            </div>
+          </a>
+        </div>
+      )
+    }
+  </div>
+</section>

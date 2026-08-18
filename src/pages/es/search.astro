@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/utils';
+const locale = 'es';
+const t = useTranslations(locale);
+---
+
+<BaseLayout locale={locale} title="Buscar | Karfanjara Hilux" description="Busca noticias, productos y proyectos." pathname="/es/search/" bodyClass="solid-hdr">
+  <section class="search-page"><div class="wrap" style="padding-top:clamp(120px,16vh,180px);padding-bottom:clamp(60px,9vw,120px)"><div class="sec-head" style="margin-bottom:32px"><span class="eyebrow">{t('search.title')}</span><h1 class="sec-title">{t('search.title')}</h1></div><div class="search-box"><input id="q" type="search" placeholder={t('search.placeholder')} autocomplete="off" /></div><div class="search-heading" id="count"></div><div class="search-results" id="results"></div></div></section>
+</BaseLayout>
+
+<script is:inline define:vars={{ locale, dict: { empty: t('search.empty'), results: t('search.results'), news: 'Noticias', product: 'Producto', project: 'Proyecto' } }}>
+  const labelMap = { article: dict.news, product: dict.product, project: dict.project };
+  const box = document.getElementById('q'); const results = document.getElementById('results'); const count = document.getElementById('count'); let index = [];
+  fetch('/search-index.json').then((r) => r.json()).then((d) => { index = d.filter((i) => i.locale === locale); });
+  function render(q) { q = q.trim().toLowerCase(); if (!q) { results.innerHTML = ''; count.textContent = ''; return; } const hits = index.filter((i) => (i.title + ' ' + i.excerpt + ' ' + (i.category || '')).toLowerCase().includes(q)); count.textContent = hits.length + ' ' + dict.results; if (!hits.length) { results.innerHTML = '<p style="color:var(--text-soft)">' + dict.empty + '</p>'; return; } results.innerHTML = hits.map((h) => `<a class="search-item" href="${h.url}"><div><div class="si-type">${labelMap[h.type] || h.type}</div><h3>${h.title}</h3><p>${h.excerpt}</p></div></a>`).join(''); }
+  box.addEventListener('input', (e) => render(e.target.value));
+</script>

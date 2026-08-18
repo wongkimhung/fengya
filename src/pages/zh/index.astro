@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Home from '../../components/Home.astro';
+import { SITE } from '../../consts';
+const locale = 'zh';
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${SITE.nameZh} | 欧洲标准铝门窗与建筑玻璃系统`}
+  description="高端铝制门窗、玻璃护栏、办公隔断与防虫纱窗，欧洲标准制造，15 年质保，本地化安装。"
+  pathname="/zh/"
+>
+  <Home locale={locale} />
+</BaseLayout>

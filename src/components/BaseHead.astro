@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+import { SITE, SITE_CONFIG } from '../consts';
+import { getAlternatePath, type Locale } from '../i18n/utils';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  pathname?: string;
+  locale?: Locale;
+}
+const {
+  title,
+  locale = 'en',
+  description = SITE_CONFIG.seo?.[locale]?.description || SITE.nameZh + ' — 欧洲标准铝门窗与建筑玻璃系统制造商',
+  image = '/images/og-cover.svg',
+  pathname = '/',
+} = Astro.props;
+// 站点可能部署在多个域名/Pages 平台，不再写死域名：
+// 有 SITE_URL（Astro.site）时输出绝对 URL；否则回退相对路径。
+const siteUrl = Astro.site ? Astro.site.toString().replace(/\/+$/, '') : '';
+const cannonical = siteUrl ? siteUrl + pathname : pathname;
+const ogImage =
+  !image || /^https?:\/\//.test(image) ? image : siteUrl ? siteUrl + image : image;
+const alternatePaths = (['en', 'zh', 'es'] as Locale[]).filter((target) => target !== locale).map((target) => ({
+  target,
+  href: getAlternatePath(pathname, target),
+}));
+---
+
+<!-- Google Fonts: Inter (Latin) + Noto Sans Georgian，与参考站一致 -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Georgian:wght@300;400;500;600;700;800;900&display=swap"
+  rel="stylesheet"
+/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={cannonical} />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogImage} />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="alternate" hreflang="x-default" href={getAlternatePath(pathname, 'en')} />
+{alternatePaths.map(({ target, href }) => <link rel="alternate" hreflang={target} href={href} />)}

@@ -1,0 +1,126 @@
+# 本地免鉴权调试配置；默认 /admin/ 已经使用 config.yml + local_backend。
+backend:
+  name: proxy
+  proxy_url: http://localhost:8081/api/v1
+  branch: main
+# 本地保存到 Git 工作区文件；不使用外部内容存储。
+publish_mode: simple
+local_backend: true
+media_folder: "public/uploads"
+public_folder: "/uploads"
+i18n:
+  structure: multiple_files
+  locales: [zh, en, es]
+  default_locale: zh
+
+collections:
+  - name: "articles"
+    label: "新闻动态"
+    folder: "src/content/articles"
+    create: true
+    slug: "{{slug}}"
+    i18n: true
+    fields:
+      - { label: "标题", name: "title", widget: "string", i18n: true }
+      - { label: "发布日期", name: "date", widget: "datetime", i18n: duplicate }
+      - { label: "分类", name: "category", widget: "string", i18n: true }
+      - { label: "封面图", name: "coverImage", widget: "image", i18n: duplicate }
+      - { label: "摘要", name: "excerpt", widget: "text", i18n: true }
+      - { label: "标签", name: "tags", widget: "list", required: false, i18n: true }
+      - { label: "推荐", name: "featured", widget: "boolean", required: false, i18n: duplicate }
+      - { label: "正文", name: "body", widget: "markdown", i18n: true }
+
+  - name: "settings"
+    label: "站点设置"
+    files:
+      - name: "contact"
+        label: "联系方式"
+        file: "public/data/contact.json"
+        fields:
+          - { label: "电话", name: "phone", widget: "string" }
+          - { label: "WhatsApp 号码", name: "whatsapp", widget: "string" }
+          - { label: "邮箱", name: "email", widget: "string" }
+          - { label: "营业时间（中文）", name: "hoursZh", widget: "string" }
+          - { label: "营业时间（英文）", name: "hoursEn", widget: "string" }
+          - { label: "营业时间（西班牙语）", name: "hoursEs", widget: "string" }
+          - { label: "地址（中文）", name: "addressZh", widget: "string", required: false }
+          - { label: "地址（英文）", name: "addressEn", widget: "string", required: false }
+          - { label: "地址（西班牙语）", name: "addressEs", widget: "string", required: false }
+          - { label: "标语（中文）", name: "taglineZh", widget: "string" }
+          - { label: "标语（英文）", name: "taglineEn", widget: "string" }
+          - { label: "标语（西班牙语）", name: "taglineEs", widget: "string" }
+          - { label: "WhatsApp 文案（中文）", name: "waTextZh", widget: "string", required: false }
+          - { label: "WhatsApp 文案（英文）", name: "waTextEn", widget: "string", required: false }
+          - { label: "WhatsApp 文案（西班牙语）", name: "waTextEs", widget: "string", required: false }
+          - { label: "Facebook", name: "facebook", widget: "string", required: false }
+          - { label: "Instagram", name: "instagram", widget: "string", required: false }
+          - { label: "TikTok", name: "tiktok", widget: "string", required: false }
+          - { label: "YouTube", name: "youtube", widget: "string", required: false }
+      - name: "site"
+        label: "品牌、SEO 与首页文案"
+        file: "public/data/site.json"
+        fields:
+          - { label: "品牌名称", name: "brand", widget: "object", fields: [
+              { label: "英文", name: "name", widget: "string" },
+              { label: "中文", name: "nameZh", widget: "string" },
+              { label: "西班牙语", name: "nameEs", widget: "string" },
+              { label: "Logo", name: "logo", widget: "image" }
+            ]}
+          - { label: "SEO 配置", name: "seo", widget: "object", fields: [
+              { label: "英文", name: "en", widget: "object", fields: [ { label: "Title", name: "title", widget: "string" }, { label: "Description", name: "description", widget: "text" } ] },
+              { label: "中文", name: "zh", widget: "object", fields: [ { label: "Title", name: "title", widget: "string" }, { label: "Description", name: "description", widget: "text" } ] },
+              { label: "西班牙语", name: "es", widget: "object", fields: [ { label: "Title", name: "title", widget: "string" }, { label: "Description", name: "description", widget: "text" } ] }
+            ]}
+          - { label: "多语言首页文案", name: "translations", widget: "object", fields: [
+              { label: "英文", name: "en", widget: "object", fields: [ { label: "Hero", name: "hero", widget: "object", fields: [ { label: "Eyebrow", name: "eyebrow", widget: "string" }, { label: "Subtitle", name: "sub", widget: "string" } ] }, { label: "Contact", name: "contact", widget: "object", fields: [ { label: "Title", name: "title", widget: "string" }, { label: "Lead", name: "lead", widget: "string" } ] }, { label: "Footer", name: "footer", widget: "object", fields: [ { label: "Tagline", name: "tagline", widget: "string" } ] } ] },
+              { label: "中文", name: "zh", widget: "object", fields: [ { label: "Hero", name: "hero", widget: "object", fields: [ { label: "Eyebrow", name: "eyebrow", widget: "string" }, { label: "Subtitle", name: "sub", widget: "string" } ] }, { label: "Contact", name: "contact", widget: "object", fields: [ { label: "Title", name: "title", widget: "string" }, { label: "Lead", name: "lead", widget: "string" } ] }, { label: "Footer", name: "footer", widget: "object", fields: [ { label: "Tagline", name: "tagline", widget: "string" } ] } ] },
+              { label: "西班牙语", name: "es", widget: "object", fields: [ { label: "Hero", name: "hero", widget: "object", fields: [ { label: "Eyebrow", name: "eyebrow", widget: "string" }, { label: "Subtitle", name: "sub", widget: "string" } ] }, { label: "Contact", name: "contact", widget: "object", fields: [ { label: "Title", name: "title", widget: "string" }, { label: "Lead", name: "lead", widget: "string" } ] }, { label: "Footer", name: "footer", widget: "object", fields: [ { label: "Tagline", name: "tagline", widget: "string" } ] } ] }
+            ]}
+
+  - name: "products"
+    label: "产品中心"
+    folder: "src/content/products"
+    create: true
+    slug: "{{slug}}"
+    i18n: false
+    fields:
+      - { label: "中文名称", name: "title", widget: "string" }
+      - { label: "English name", name: "titleEn", widget: "string", required: false }
+      - { label: "Nombre en español", name: "titleEs", widget: "string", required: false }
+      - { label: "中文分类", name: "category", widget: "select", options: ["核心产品", "解决方案", "配套服务"] }
+      - { label: "English category", name: "categoryEn", widget: "string", required: false }
+      - { label: "Categoría en español", name: "categoryEs", widget: "string", required: false }
+      - { label: "主图", name: "mainImage", widget: "image" }
+      - { label: "图集", name: "gallery", widget: "list", field: { label: "图片", name: "image", widget: "image" }, required: false }
+      - { label: "优势（中文）", name: "advantages", widget: "list", field: { label: "优势", name: "item", widget: "string" }, required: false }
+      - { label: "Advantages (EN)", name: "advantagesEn", widget: "list", field: { label: "Advantage", name: "item", widget: "string" }, required: false }
+      - { label: "Ventajas (ES)", name: "advantagesEs", widget: "list", field: { label: "Ventaja", name: "item", widget: "string" }, required: false }
+      - { label: "规格参数", name: "specs", widget: "list", fields: [ { label: "Key", name: "key", widget: "string" }, { label: "Key EN", name: "keyEn", widget: "string", required: false }, { label: "Key ES", name: "keyEs", widget: "string", required: false }, { label: "Value", name: "value", widget: "string" }, { label: "Value EN", name: "valueEn", widget: "string", required: false }, { label: "Value ES", name: "valueEs", widget: "string", required: false } ] }
+      - { label: "摘要（中文）", name: "excerpt", widget: "text", required: false }
+      - { label: "Excerpt (EN)", name: "excerptEn", widget: "text", required: false }
+      - { label: "Resumen (ES)", name: "excerptEs", widget: "text", required: false }
+      - { label: "正文", name: "body", widget: "markdown", required: false }
+      - { label: "排序", name: "order", widget: "number", required: false, default: 99 }
+
+  - name: "projects"
+    label: "项目案例"
+    folder: "src/content/projects"
+    create: true
+    slug: "{{slug}}"
+    i18n: false
+    fields:
+      - { label: "中文名称", name: "title", widget: "string" }
+      - { label: "English name", name: "titleEn", widget: "string", required: false }
+      - { label: "Nombre en español", name: "titleEs", widget: "string", required: false }
+      - { label: "客户（中文）", name: "client", widget: "string" }
+      - { label: "Client (EN)", name: "clientEn", widget: "string", required: false }
+      - { label: "Cliente (ES)", name: "clientEs", widget: "string", required: false }
+      - { label: "完成时间", name: "completionDate", widget: "date" }
+      - { label: "成果指标", name: "metrics", widget: "list", fields: [ { label: "中文标签", name: "label", widget: "string" }, { label: "EN label", name: "labelEn", widget: "string", required: false }, { label: "ES label", name: "labelEs", widget: "string", required: false }, { label: "数值", name: "value", widget: "string" } ] }
+      - { label: "封面图", name: "cover", widget: "image" }
+      - { label: "图集", name: "gallery", widget: "list", field: { label: "图片", name: "image", widget: "image" }, required: false }
+      - { label: "摘要（中文）", name: "excerpt", widget: "text", required: false }
+      - { label: "Excerpt (EN)", name: "excerptEn", widget: "text", required: false }
+      - { label: "Resumen (ES)", name: "excerptEs", widget: "text", required: false }
+      - { label: "正文", name: "body", widget: "markdown", required: false }
+      - { label: "排序", name: "order", widget: "number", required: false, default: 99 }

@@ -1,0 +1,29 @@
+---
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import Icon from './Icon.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'products'>;
+}
+const { locale, entry } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const loc = (data: any, field: string) => locale === 'en' ? data[`${field}En`] || data[field] : locale === 'es' ? data[`${field}Es`] || data[`${field}En`] || data[field] : data[field];
+---
+
+<a class="blog-card reveal" href={p(`/products/${entry.id}/`)}>
+  <div class="blog-card-img">
+    <img class="ph" src={asset(entry.data.mainImage)} alt={loc(entry.data, 'title')} />
+  </div>
+  <div class="blog-card-body">
+    <span class="cat">{loc(entry.data, 'category')}</span>
+    <h2>{loc(entry.data, 'title')}</h2>
+    <p>{loc(entry.data, 'excerpt')}</p>
+    <span class="arrow" style="color:var(--slate);gap:8px;font-size:14px;font-weight:600">
+      {t('cta.learn')} <Icon name="arrow" size={15} />
+    </span>
+  </div>
+</a>

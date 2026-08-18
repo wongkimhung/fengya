@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ContactSection from '../../../components/ContactSection.astro';
+import QuoteForm from '../../../components/QuoteForm.astro';
+import { useTranslations } from '../../../i18n/utils';
+import Icon from '../../../components/Icon.astro';
+const locale = 'zh';
+const t = useTranslations(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="联系我们 | Karfanjara Hilux"
+  description="电话、WhatsApp 与在线咨询表单，1 个工作日内回复。"
+  pathname="/zh/contact/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src="/images/contact-cover.svg" alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/zh/">首页</a> / 联系我们</div>
+      <h1>联系我们</h1>
+      <p class="lead">免费咨询、精准测量、一口价无隐藏费用。致电或 WhatsApp 留言，我们会尽快回复。</p>
+    </div>
+  </section>
+
+  <!-- 免费报价表单（核心转化入口） -->
+  <QuoteForm locale={locale} />
+
+  <!-- 通用联系表单 -->
+  <ContactSection locale={locale} id="general-contact" />
+
+  <!-- 服务区域 -->
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0">
+    <div class="wrap">
+      <div class="area-chips">
+        <span>第比利西</span><span>库塔伊西</span><span>巴统</span><span>鲁斯塔维</span><span>哥里</span><span>波季</span>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

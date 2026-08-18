@@ -1,0 +1,35 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const steps = [
+  { n: '01', t: t('process.s1.t'), d: t('process.s1.d') },
+  { n: '02', t: t('process.s2.t'), d: t('process.s2.d') },
+  { n: '03', t: t('process.s3.t'), d: t('process.s3.d') },
+  { n: '04', t: t('process.s4.t'), d: t('process.s4.d') },
+];
+---
+
+<section class="process" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{t('process.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('process.title')}></h2>
+      <p class="sec-sub">{t('process.sub')}</p>
+    </div>
+    <div class="track">
+      {
+        steps.map((s) => (
+          <div class="step reveal">
+            <div class="dot">{s.n}</div>
+            <h3>{s.t}</h3>
+            <p>{s.d}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

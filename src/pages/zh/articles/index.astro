@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ArticleCard from '../../../components/ArticleCard.astro';
+import { getArticles } from '../../../lib/content';
+import { useTranslations } from '../../../i18n/utils';
+import { asset } from '../../../consts';
+const locale = 'zh';
+const t = useTranslations(locale);
+const articles = await getArticles(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="新闻动态 | Karfanjara Hilux"
+  description="公司新闻、行业动态与媒体报道。"
+  pathname="/zh/articles/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/articles-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/zh/">首页</a> / 新闻动态</div>
+      <h1>新闻动态</h1>
+      <p class="lead">公司新闻、行业动态与媒体报道。</p>
+    </div>
+  </section>
+
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0 clamp(72px,10vw,120px)">
+    <div class="wrap">
+      {articles.length === 0 ? (
+        <p style="color:var(--text-soft)">暂无内容，请在 Decap CMS 后台发布文章。</p>
+      ) : (
+        <div class="blog-list">
+          {articles.map((a) => <ArticleCard locale={locale} entry={a} />)}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

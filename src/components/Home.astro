@@ -1,0 +1,38 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+import { getProducts, getProjects } from '../lib/content';
+import Hero from './Hero.astro';
+import Marquee from './Marquee.astro';
+import IntroPoints from './IntroPoints.astro';
+import WhyGrid from './WhyGrid.astro';
+import Products from './Products.astro';
+import Systems from './Systems.astro';
+import Process from './Process.astro';
+import Projects from './Projects.astro';
+import StatsBand from './StatsBand.astro';
+import FAQ from './FAQ.astro';
+import ContactSection from './ContactSection.astro';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const products = await getProducts(locale);
+const projects = await getProjects(locale);
+const feature = products[0];
+const grid = products.slice(1, 5);
+---
+
+<Hero locale={locale} />
+<Marquee locale={locale} />
+<IntroPoints locale={locale} />
+<WhyGrid locale={locale} />
+<Products locale={locale} feature={feature} grid={grid} />
+<Systems locale={locale} />
+<Process locale={locale} />
+<Projects locale={locale} projects={projects} />
+<StatsBand locale={locale} />
+<FAQ locale={locale} />
+<ContactSection locale={locale} compact />

@@ -1,0 +1,55 @@
+---
+import { useTranslations, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  locale: Locale;
+  projects?: CollectionEntry<'projects'>[];
+}
+const { locale, projects = [] } = Astro.props;
+const t = useTranslations(locale);
+const loc = (data: any, field: string) => locale === 'en' ? data[`${field}En`] || data[field] : locale === 'es' ? data[`${field}Es`] || data[`${field}En`] || data[field] : data[field];
+
+// 参考网站项目图片
+const projectImages = [
+  { src: '/images/karfanjara/mq-01.jpg', alt: 'Aluminum windows, doors and glass railing project for a private home in Kojori.', cap: 'Private home · Glazing' },
+  { src: '/images/karfanjara/mq-02.jpg', alt: 'Panoramic aluminum glazing, bright living interior.', cap: 'Panoramic glazing' },
+  { src: '/images/karfanjara/mq-03.jpg', alt: 'Office glass partitions with a black aluminum profile, Tbilisi.', cap: 'Office partition' },
+  { src: '/images/karfanjara/mq-04.jpg', alt: 'Safe glass railing on a terrace with a panoramic view.', cap: 'Glass railing' },
+  { src: '/images/karfanjara/mq-05.jpg', alt: 'Premium aluminum curtain-wall system for the Guramishvili Marani restaurant.', cap: 'Restaurant glazing' },
+  { src: '/images/karfanjara/mq-06.jpg', alt: 'Black aluminum window and door system with safe glass railings and pleated screens for a private home in Kojori.', cap: 'Private home · Courtyard' },
+  { src: '/images/karfanjara/mq-07.jpg', alt: 'Premium aluminum curtain-wall system for the Guramishvili Marani restaurant.', cap: 'Restaurant glazing' },
+  { src: '/images/karfanjara/mq-08.jpg', alt: 'Black aluminum windows on a building facade, Tbilisi.', cap: 'Aluminum facade' },
+  { src: '/images/karfanjara/mq-09.jpg', alt: 'Aluminum curtain-wall system completed for a restaurant in Kakheti.', cap: 'Restaurant glazing' },
+  { src: '/images/karfanjara/mq-10.jpg', alt: 'Aluminum curtain-wall system with a bi-fold opening. Restaurant and winery in Kakheti.', cap: 'Restaurant glazing' },
+  { src: '/images/karfanjara/mq-11.jpg', alt: 'Office space glazing, modern interior.', cap: 'Office space' },
+  { src: '/images/karfanjara/mq-12.jpg', alt: 'Safe, durable glass railing for a private home in Tbilisi.', cap: 'Glass railing' },
+].map((item) => locale === 'es'
+  ? { ...item, cap: item.cap.replace('Private home', 'Vivienda privada').replace('Panoramic glazing', 'Vidrio panorámico').replace('Office partition', 'Mampara de oficina').replace('Glass railing', 'Barandilla de vidrio').replace('Restaurant glazing', 'Vidrio de restaurante').replace('Aluminum facade', 'Fachada de aluminio').replace('Office space', 'Espacio de oficina').replace('Courtyard', 'Patio') }
+  : item);
+const loop = [...projectImages, ...projectImages];
+---
+
+<section class="projects on-dark" id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{t('projects.eyebrow')}</span>
+      <h2 class="sec-title" set:html={t('projects.title')}></h2>
+      <p class="sec-sub">{t('projects.sub')}</p>
+    </div>
+  </div>
+  <div class="pmarquee reveal" aria-label="Gallery of completed projects">
+    <div class="pmarquee-track">
+      {loop.map((img) => (
+        <button class="ptile" type="button" aria-label={img.alt}>
+          <img src={img.src} alt={img.alt} loading="lazy" />
+          <span class="cap">{img.cap}</span>
+          <span class="zoombadge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
+          </span>
+        </button>
+      ))}
+    </div>
+  </div>
+</section>

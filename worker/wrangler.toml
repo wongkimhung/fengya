@@ -1,0 +1,24 @@
+# 独立 Cloudflare Worker — 表单接口（双站点共用）
+# 部署：npx wrangler deploy
+# 命名空间（KV）创建：npx wrangler kv namespace create QUOTES
+name = "karfanjara-form"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# 敏感配置（TURNSTILE_SECRET_KEY / NOTIFY_URL / RESEND_API_KEY 等）不要写在这里：
+#   npx wrangler secret put TURNSTILE_SECRET_KEY
+#   npx wrangler secret put NOTIFY_URL
+#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put RESEND_FROM_EMAIL
+#   npx wrangler secret put QUOTE_NOTIFY_TO
+#   npx wrangler secret put GOOGLE_TRANSLATE_API_KEY
+# 可选环境变量：TRANSLATE_ALLOWED_ORIGIN = "https://www.karfanjara.ge"
+
+[[kv_namespaces]]
+binding = "QUOTES"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# 可选：绑定自定义域名（如 form.karfanjara.ge），需在 Cloudflare DNS 添加 CNAME 指向该 Worker 路由
+# [routes]
+# pattern = "form.karfanjara.ge/api/*"
+# zone_name = "karfanjara.ge"

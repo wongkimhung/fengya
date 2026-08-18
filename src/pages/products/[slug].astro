@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductDetail from '../../components/ProductDetail.astro';
+import { getProduct } from '../../lib/content';
+import { useTranslations, type Locale } from '../../i18n/utils';
+
+export async function getStaticPaths() {
+  const { getCollection } = await import('astro:content');
+  const all = await getCollection('products');
+  return all.map((entry) => ({
+    params: { slug: entry.id },
+    props: { locale: 'en' as Locale, id: entry.id },
+  }));
+}
+
+const { locale, id } = Astro.props;
+const t = useTranslations(locale);
+const entry = await getProduct(id);
+if (!entry) return Astro.redirect('/products/');
+const p = (s: string) => (locale === 'zh' ? `/zh${s}` : s);
+const loc = (data: any, field: string) =>
+  locale === 'en' && data[`${field}En`] ? data[`${field}En`] : data[field];
+const pageTitle = locale === 'en' && entry.data.detailTitleEn ? entry.data.detailTitleEn : loc(entry.data, 'title');
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${pageTitle} | Karfanjara Hilux`}
+  description={entry.data.excerptEn || entry.data.excerpt}
+  pathname={p(`/products/${id}/`)}
+  bodyClass="solid-hdr"
+>
+  <ProductDetail locale={locale} entry={entry} />
+</BaseLayout>

@@ -1,0 +1,29 @@
+{
+  "name": "karfanjara-portal",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "cms": "decap-server",
+    "storage": "node scripts/r2-local.mjs",
+    "dev:all": "MEDIA_BASE=http://localhost:8788 concurrently -n site,cms,r2 -c cyan,magenta,yellow \"astro dev\" \"decap-server\" \"node scripts/r2-local.mjs\"",
+    "dev:full": "FORM_ENDPOINT=http://127.0.0.1:8787 MEDIA_BASE=http://localhost:8788 concurrently -n site,cms,r2,form -c cyan,magenta,yellow,blue \"astro dev\" \"decap-server\" \"node scripts/r2-local.mjs\" \"npm run worker:dev\"",
+    "deploy:pages": "bash scripts/deploy-pages.sh",
+    "worker:dev": "wrangler dev --config worker/wrangler.toml",
+    "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
+    "deploy:worker": "bash scripts/deploy-worker.sh"
+  },
+  "dependencies": {
+    "astro": "^5.2.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260817.1",
+    "concurrently": "^9.1.2",
+    "decap-server": "^3.3.3",
+    "wrangler": "^4.123.0"
+  }
+}

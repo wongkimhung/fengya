@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ContactSection from '../../../components/ContactSection.astro';
+import QuoteForm from '../../../components/QuoteForm.astro';
+const locale = 'es';
+---
+
+<BaseLayout locale={locale} title="Contacto | Karfanjara Hilux" description="Consulta gratuita, medición precisa y precio fijo sin costes ocultos." pathname="/es/contact/" bodyClass="solid-hdr">
+  <section class="ihero on-dark"><div class="ihero-bg"><img src="/images/contact-cover.svg" alt="" /></div><div class="wrap ihero-inner"><div class="breadcrumb"><a href="/es/">Inicio</a> / Contacto</div><h1>Contacto</h1><p class="lead">Consulta gratuita, medición precisa y precio fijo sin costes ocultos.</p></div></section>
+  <QuoteForm locale={locale} />
+  <ContactSection locale={locale} id="general-contact" />
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0"><div class="wrap"><div class="area-chips"><span>Tiflis</span><span> Kutaisi</span><span>Batumi</span><span>Rustavi</span><span>Gori</span><span>Poti</span></div></div></section>
+</BaseLayout>

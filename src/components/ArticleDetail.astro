@@ -1,0 +1,69 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import ArticleCard from './ArticleCard.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'articles'>;
+  related: CollectionEntry<'articles'>[];
+}
+const { locale, entry, related } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const { Content } = await render(entry);
+const dateStr = entry.data.date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'es' ? 'es-ES' : 'en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article class="bp solid-hdr">
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset(entry.data.coverImage)} alt={entry.data.title} /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb">
+        <a href={p('/articles/')}>{locale === 'zh' ? '新闻动态' : locale === 'es' ? 'Noticias' : 'News'}</a> / {entry.data.category}
+      </div>
+      <div class="cat">{entry.data.category}</div>
+      <h1>{entry.data.title}</h1>
+      <div class="bp-date">{dateStr}</div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="bp-hero"><img src={asset(entry.data.coverImage)} alt={entry.data.title} /></div>
+    <div class="bp-body">
+      <p style="font-size:19px;color:var(--ink);font-weight:500">{entry.data.excerpt}</p>
+      <Content />
+
+      <div class="bp-cta">
+        <h3>{locale === 'zh' ? '想为你的项目选型？' : locale === 'es' ? '¿Estás planificando un proyecto?' : 'Planning a project?'}</h3>
+        <p>{locale === 'zh' ? '告诉我们你的需求，获取定制方案与报价。' : locale === 'es' ? 'Cuéntanos qué necesitas y recibe un plan y presupuesto a medida.' : 'Tell us what you need — get a tailored plan and quote.'}</p>
+        <div class="contact-actions">
+          <a class="btn btn-acc" href={p('/contact/')}>{t('cta.quote')}</a>
+          <a class="btn btn-ghost" href={p('/products/')}>{t('cta.learn')}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {
+    related.length > 0 && (
+      <section style="background:var(--paper-2);padding:clamp(56px,8vw,100px) 0">
+        <div class="wrap">
+          <div class="sec-head">
+            <span class="eyebrow">{locale === 'zh' ? '相关阅读' : locale === 'es' ? 'Relacionado' : 'Related'}</span>
+            <h2 class="sec-title">{locale === 'zh' ? '更多新闻动态' : locale === 'es' ? 'Más noticias' : 'More news'}</h2>
+          </div>
+          <div class="blog-list">
+            {related.map((r) => <ArticleCard locale={locale} entry={r} />)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</article>

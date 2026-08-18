@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import { getProducts } from '../../../lib/content';
+import { asset } from '../../../consts';
+const locale = 'zh';
+const products = await getProducts(locale);
+---
+
+<BaseLayout
+  locale={locale}
+  title="产品中心 | Karfanjara Hilux"
+  description="铝门窗、玻璃护栏、办公隔断与防虫纱窗等全线产品。"
+  pathname="/zh/products/"
+  bodyClass="solid-hdr"
+>
+  <section class="ihero on-dark">
+    <div class="ihero-bg"><img src={asset('/images/products-cover.svg')} alt="" /></div>
+    <div class="wrap ihero-inner">
+      <div class="breadcrumb"><a href="/zh/">首页</a> / 产品中心</div>
+      <h1>产品中心</h1>
+      <p class="lead">覆盖住宅与商业空间的全线门窗与玻璃产品。</p>
+    </div>
+  </section>
+
+  <section style="background:var(--paper);padding:clamp(44px,6vw,72px) 0 clamp(72px,10vw,120px)">
+    <div class="wrap">
+      {products.length === 0 ? (
+        <p style="color:var(--text-soft)">暂无内容，请在 Decap CMS 后台发布产品。</p>
+      ) : (
+        <div class="blog-list">
+          {products.map((pr) => <ProductCard locale={locale} entry={pr} />)}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

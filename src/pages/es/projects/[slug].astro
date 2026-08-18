@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectDetail from '../../../components/ProjectDetail.astro';
+import { getProject } from '../../../lib/content';
+import type { Locale } from '../../../i18n/ui';
+const locale: Locale = 'es';
+export async function getStaticPaths() {
+  const { getCollection } = await import('astro:content');
+  const all = await getCollection('projects');
+  return all.map((entry) => ({ params: { slug: entry.id }, props: { id: entry.id } }));
+}
+const { id } = Astro.props;
+const entry = await getProject(id);
+if (!entry) return Astro.redirect('/es/projects/');
+---
+
+<BaseLayout locale={locale} title={`${entry.data.titleEs || entry.data.titleEn || entry.data.title} | Karfanjara Hilux`} description={entry.data.excerptEs || entry.data.excerptEn || entry.data.excerpt} pathname={`/es/projects/${id}/`} bodyClass="solid-hdr">
+  <ProjectDetail locale={locale} entry={entry} />
+</BaseLayout>

@@ -1,0 +1,31 @@
+---
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+
+interface Props {
+  locale: Locale;
+  image?: string;
+}
+const { locale, image = '/images/karfanjara/villa-dusk-tbilisi.jpg' } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+---
+
+<section class="hero on-dark" id="top">
+  <div class="hero-bg" id="heroBg">
+    <img src={asset(image)} alt={locale === 'zh' ? '高端铝门窗项目实景' : locale === 'es' ? 'Proyecto de ventanas de aluminio premium' : 'Premium aluminum windows project'} />
+  </div>
+  <div class="wrap hero-inner">
+    <span class="eyebrow">{t('hero.eyebrow')}</span>
+    <h1>
+      <span class="line"><span>{t('hero.title.line1')}</span></span>
+      <span class="line"><span set:html={t('hero.title.line2')}></span></span>
+    </h1>
+    <p class="sub">{t('hero.sub')}</p>
+
+    <div class="hero-ctas">
+      <a class="btn btn-acc" href={p('/contact/')}>{t('cta.quote')}</a>
+    </div>
+  </div>
+  <div class="scrollcue"><span class="bar"></span>Scroll</div>
+</section>

@@ -1,0 +1,32 @@
+---
+import { useTranslations, localePath, type Locale } from '../i18n/utils';
+import { asset } from '../consts';
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'articles'>;
+}
+const { locale, entry } = Astro.props;
+const t = useTranslations(locale);
+const p = (s: string) => localePath(locale, s);
+const slug = entry.id.replace(/(?:en|es)$/, '');
+const dateStr = entry.data.date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'es' ? 'es-ES' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<a class="blog-card reveal" href={p(`/articles/${slug}/`)}>
+  <div class="blog-card-img">
+    <img class="ph" src={asset(entry.data.coverImage)} alt={entry.data.title} />
+  </div>
+  <div class="blog-card-body">
+    <div class="date">{dateStr}</div>
+    <h2>{entry.data.title}</h2>
+    <p>{entry.data.excerpt}</p>
+    <span class="cat">{entry.data.category}</span>
+  </div>
+</a>

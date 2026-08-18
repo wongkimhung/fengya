@@ -1,0 +1,251 @@
+backend:
+  name: github
+  repo: wongkimhung/fengya # Your GitHub repository
+  branch: main
+
+# 直接发布：文章、翻译、产品、项目和 JSON 配置均提交到 Git，不使用外部 CMS 数据库。
+publish_mode: simple
+
+# 本地免鉴权：localhost 下 Decap 自动连本机 decap-server(:8081)，无需 GitHub 登录；
+# 生产环境（无 decap-server）自动回退到上面的 github OAuth。
+local_backend: true
+
+# Static assets and file upload config (local /uploads; synced to Cloudflare R2 with custom domain on deploy)
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+# Internationalization:
+# - Products/Projects use single-file inline bilingual fields (titleEn/bodyEn etc.), i18n disabled
+i18n:
+  structure: multiple_files
+  locales: [zh, en, es]
+  default_locale: zh
+
+collections:
+  # ====================================================
+  # News Module — supports zh/en/es side-by-side editing
+  # ====================================================
+  - name: "articles"
+    label: "News"
+    folder: "src/content/articles"
+    create: true
+    slug: "{{slug}}"
+    i18n: true
+    fields:
+      - { label: "Title", name: "title", widget: "string", i18n: true }
+      - { label: "Publish Date", name: "date", widget: "datetime", i18n: duplicate }
+      - { label: "Category", name: "category", widget: "string", i18n: true }
+      - { label: "Cover Image", name: "coverImage", widget: "image", i18n: duplicate }
+      - { label: "Excerpt", name: "excerpt", widget: "text", i18n: true }
+      - { label: "Tags", name: "tags", widget: "list", required: false, i18n: true }
+      - { label: "Featured", name: "featured", widget: "boolean", required: false, default: false, i18n: duplicate }
+      - { label: "Body (Markdown)", name: "body", widget: "markdown", i18n: true }
+
+  # ====================================================
+  # Site Settings (Singleton — Contact Info, edited as JSON at runtime)
+  # ====================================================
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      - name: "contact"
+        label: "Contact Information"
+        file: "public/data/contact.json"
+        fields:
+          - { label: "Phone", name: "phone", widget: "string" }
+          - { label: "WhatsApp Number", name: "whatsapp", widget: "string" }
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "Business Hours (EN)", name: "hoursEn", widget: "string" }
+          - { label: "Business Hours (ZH)", name: "hoursZh", widget: "string" }
+          - { label: "Business Hours (ES)", name: "hoursEs", widget: "string" }
+          - { label: "Address (EN)", name: "addressEn", widget: "string", required: false }
+          - { label: "Address (ZH)", name: "addressZh", widget: "string", required: false }
+          - { label: "Address (ES)", name: "addressEs", widget: "string", required: false }
+          - { label: "Tagline (EN)", name: "taglineEn", widget: "string" }
+          - { label: "Tagline (ZH)", name: "taglineZh", widget: "string" }
+          - { label: "Tagline (ES)", name: "taglineEs", widget: "string" }
+          - { label: "WhatsApp Text (EN)", name: "waTextEn", widget: "string", required: false }
+          - { label: "WhatsApp Text (ZH)", name: "waTextZh", widget: "string", required: false }
+          - { label: "WhatsApp Text (ES)", name: "waTextEs", widget: "string", required: false }
+          - { label: "Facebook URL", name: "facebook", widget: "string", required: false }
+          - { label: "Instagram URL", name: "instagram", widget: "string", required: false }
+          - { label: "TikTok URL", name: "tiktok", widget: "string", required: false }
+          - { label: "YouTube URL", name: "youtube", widget: "string", required: false }
+      - name: "site"
+        label: "Brand, SEO & Homepage Copy"
+        file: "public/data/site.json"
+        fields:
+          - label: "Brand"
+            name: "brand"
+            widget: "object"
+            fields:
+              - { label: "Brand Name", name: "name", widget: "string" }
+              - { label: "Brand Name (Chinese)", name: "nameZh", widget: "string" }
+              - { label: "Brand Name (Spanish)", name: "nameEs", widget: "string" }
+              - { label: "Logo", name: "logo", widget: "image" }
+          - label: "SEO"
+            name: "seo"
+            widget: "object"
+            fields:
+              - label: "English"
+                name: "en"
+                widget: "object"
+                fields:
+                  - { label: "Title", name: "title", widget: "string" }
+                  - { label: "Description", name: "description", widget: "text" }
+              - label: "Chinese"
+                name: "zh"
+                widget: "object"
+                fields:
+                  - { label: "Title", name: "title", widget: "string" }
+                  - { label: "Description", name: "description", widget: "text" }
+              - label: "Spanish"
+                name: "es"
+                widget: "object"
+                fields:
+                  - { label: "Title", name: "title", widget: "string" }
+                  - { label: "Description", name: "description", widget: "text" }
+          - label: "Homepage translations"
+            name: "translations"
+            widget: "object"
+            hint: "Nested fields override the built-in UI copy at build time."
+            fields:
+              - label: "English"
+                name: "en"
+                widget: "object"
+                fields:
+                  - label: "Hero"
+                    name: "hero"
+                    widget: "object"
+                    fields:
+                      - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+                      - { label: "Subtitle", name: "sub", widget: "string" }
+                  - label: "Contact CTA"
+                    name: "contact"
+                    widget: "object"
+                    fields:
+                      - { label: "Title", name: "title", widget: "string" }
+                      - { label: "Lead", name: "lead", widget: "string" }
+                  - label: "Footer"
+                    name: "footer"
+                    widget: "object"
+                    fields:
+                      - { label: "Tagline", name: "tagline", widget: "string" }
+              - label: "Chinese"
+                name: "zh"
+                widget: "object"
+                fields:
+                  - label: "Hero"
+                    name: "hero"
+                    widget: "object"
+                    fields:
+                      - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+                      - { label: "Subtitle", name: "sub", widget: "string" }
+                  - label: "Contact CTA"
+                    name: "contact"
+                    widget: "object"
+                    fields:
+                      - { label: "Title", name: "title", widget: "string" }
+                      - { label: "Lead", name: "lead", widget: "string" }
+                  - label: "Footer"
+                    name: "footer"
+                    widget: "object"
+                    fields:
+                      - { label: "Tagline", name: "tagline", widget: "string" }
+              - label: "Spanish"
+                name: "es"
+                widget: "object"
+                fields:
+                  - label: "Hero"
+                    name: "hero"
+                    widget: "object"
+                    fields:
+                      - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+                      - { label: "Subtitle", name: "sub", widget: "string" }
+                  - label: "Contact CTA"
+                    name: "contact"
+                    widget: "object"
+                    fields:
+                      - { label: "Title", name: "title", widget: "string" }
+                      - { label: "Lead", name: "lead", widget: "string" }
+                  - label: "Footer"
+                    name: "footer"
+                    widget: "object"
+                    fields:
+                      - { label: "Tagline", name: "tagline", widget: "string" }
+
+  # ====================================================
+  # Products Module
+  # ====================================================
+  - name: "products"
+    label: "Products"
+    folder: "src/content/products"
+    create: true
+    slug: "{{slug}}"
+    i18n: false
+    fields:
+      - { label: "Product Name", name: "title", widget: "string" }
+      - { label: "Product Name (EN)", name: "titleEn", widget: "string", required: false }
+      - { label: "Product Name (ES)", name: "titleEs", widget: "string", required: false }
+      - { label: "Detail Title", name: "detailTitle", widget: "string", required: false }
+      - { label: "Detail Title (EN)", name: "detailTitleEn", widget: "string", required: false }
+      - { label: "Detail Title (ES)", name: "detailTitleEs", widget: "string", required: false }
+      - { label: "Category", name: "category", widget: "select", options: ["核心产品", "解决方案", "配套服务"] }
+      - { label: "Category (EN)", name: "categoryEn", widget: "string", required: false }
+      - { label: "Category (ES)", name: "categoryEs", widget: "string", required: false }
+      - { label: "Main Image", name: "mainImage", widget: "image" }
+      - { label: "Gallery", name: "gallery", widget: "list", field: { label: "Image", name: "image", widget: "image" }, required: false }
+      - { label: "Advantages Title", name: "advantagesTitle", widget: "string", required: false }
+      - { label: "Advantages Title (EN)", name: "advantagesTitleEn", widget: "string", required: false }
+      - { label: "Advantages Title (ES)", name: "advantagesTitleEs", widget: "string", required: false }
+      - { label: "Advantages (Chinese)", name: "advantages", widget: "list", field: { label: "Advantage", name: "item", widget: "string" }, required: false }
+      - { label: "Advantages (EN)", name: "advantagesEn", widget: "list", field: { label: "Advantage", name: "item", widget: "string" }, required: false }
+      - { label: "Advantages (ES)", name: "advantagesEs", widget: "list", field: { label: "Advantage", name: "item", widget: "string" }, required: false }
+      - { label: "Specifications", name: "specs", widget: "list", fields: [
+          { label: "Key", name: "key", widget: "string" },
+          { label: "Key (EN)", name: "keyEn", widget: "string", required: false },
+          { label: "Key (ES)", name: "keyEs", widget: "string", required: false },
+          { label: "Value", name: "value", widget: "string" },
+          { label: "Value (EN)", name: "valueEn", widget: "string", required: false },
+          { label: "Value (ES)", name: "valueEs", widget: "string", required: false }
+        ]}
+      - { label: "Brochure (PDF)", name: "brochure", widget: "file", required: false }
+      - { label: "Excerpt", name: "excerpt", widget: "text", required: false }
+      - { label: "Excerpt (EN)", name: "excerptEn", widget: "text", required: false }
+      - { label: "Excerpt (ES)", name: "excerptEs", widget: "text", required: false }
+      - { label: "Description (Markdown)", name: "body", widget: "markdown", required: false }
+      - { label: "Description (EN, HTML)", name: "bodyEn", widget: "text", required: false, hint: "English description, supports HTML fragments" }
+      - { label: "Description (ES, HTML)", name: "bodyEs", widget: "text", required: false, hint: "Spanish description, supports HTML fragments" }
+      - { label: "Sort Order", name: "order", widget: "number", required: false, default: 99 }
+
+  # ====================================================
+  # Projects Module
+  # ====================================================
+  - name: "projects"
+    label: "Projects"
+    folder: "src/content/projects"
+    create: true
+    slug: "{{slug}}"
+    i18n: false
+    fields:
+      - { label: "Project Name", name: "title", widget: "string" }
+      - { label: "Project Name (EN)", name: "titleEn", widget: "string", required: false }
+      - { label: "Project Name (ES)", name: "titleEs", widget: "string", required: false }
+      - { label: "Client", name: "client", widget: "string" }
+      - { label: "Client (EN)", name: "clientEn", widget: "string", required: false }
+      - { label: "Client (ES)", name: "clientEs", widget: "string", required: false }
+      - { label: "Completion Date", name: "completionDate", widget: "date" }
+      - { label: "Key Metrics", name: "metrics", widget: "list", fields: [
+          { label: "Metric Label", name: "label", widget: "string" },
+          { label: "Metric Label (EN)", name: "labelEn", widget: "string", required: false },
+          { label: "Metric Label (ES)", name: "labelEs", widget: "string", required: false },
+          { label: "Metric Value", name: "value", widget: "string" }
+        ]}
+      - { label: "Cover Image", name: "cover", widget: "image" }
+      - { label: "Gallery", name: "gallery", widget: "list", field: { label: "Image", name: "image", widget: "image" }, required: false }
+      - { label: "Case Study (PDF)", name: "caseStudyPdf", widget: "file", required: false }
+      - { label: "Excerpt", name: "excerpt", widget: "text", required: false }
+      - { label: "Excerpt (EN)", name: "excerptEn", widget: "text", required: false }
+      - { label: "Excerpt (ES)", name: "excerptEs", widget: "text", required: false }
+      - { label: "Description (Markdown)", name: "body", widget: "markdown", required: false }
+      - { label: "Description (EN, HTML)", name: "bodyEn", widget: "text", required: false }
+      - { label: "Sort Order", name: "order", widget: "number", required: false, default: 99 }

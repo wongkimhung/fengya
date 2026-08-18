@@ -1,0 +1,207 @@
+---
+// QuoteForm — 免费报价需求提交表单
+// 提交到独立 Worker 的 /api/quote，存储到 KV + 发送邮件通知给管理员
+import { useTranslations, type Locale } from '../i18n/utils';
+import { SITE } from '../consts';
+
+interface Props {
+  locale: Locale;
+  id?: string;
+}
+const { locale, id = 'quote-form' } = Astro.props;
+const t = useTranslations(locale);
+const isZh = locale === 'zh';
+const isEs = locale === 'es';
+---
+
+<section class="quote-form-section" id={id}>
+  <div class="wrap reveal">
+    <h2>{isZh ? '获取免费报价' : isEs ? 'Obtén un presupuesto gratis' : 'Get a Free Quote'}</h2>
+    <p class="lead">{isZh ? '填写以下信息，我们将在 1 个工作日内为您提供详细报价' : isEs ? 'Completa los datos y te enviaremos un presupuesto detallado en un día laborable' : 'Fill in the details below and we will provide a detailed quote within 1 business day'}</p>
+
+    <form data-quote class="qf-form" method="POST" action={`${SITE.formEndpoint}/api/quote`}>
+      <!-- 基本信息 -->
+      <div class="qf-row">
+        <div class="field">
+          <label for="qf-name">{isZh ? '姓名 *' : isEs ? 'Nombre *' : 'Name *'}</label>
+          <input id="qf-name" name="name" type="text" required placeholder={isZh ? '您的姓名' : isEs ? 'Tu nombre' : 'Your name'} />
+        </div>
+        <div class="field">
+          <label for="qf-phone">{isZh ? '电话 / WhatsApp *' : isEs ? 'Teléfono / WhatsApp *' : 'Phone / WhatsApp *'}</label>
+          <input id="qf-phone" name="phone" type="tel" required placeholder="+995 XXX XX XX XX" />
+        </div>
+      </div>
+
+      <div class="qf-row">
+        <div class="field">
+          <label for="qf-email">{isZh ? '邮箱' : isEs ? 'Correo electrónico' : 'Email'}</label>
+          <input id="qf-email" name="email" type="email" placeholder="name@example.com" />
+        </div>
+        <div class="field">
+          <label for="qf-product">{isZh ? '产品类型' : isEs ? 'Tipo de producto' : 'Product Type'}</label>
+          <select id="qf-product" name="productType">
+            <option value="">{isZh ? '请选择…' : isEs ? 'Seleccionar…' : 'Select…'}</option>
+            <option value="aluminum-windows">{isZh ? '铝门窗系列' : isEs ? 'Ventanas y puertas de aluminio' : 'Aluminum Windows & Doors'}</option>
+            <option value="glass-railings">{isZh ? '玻璃护栏' : isEs ? 'Barandillas de vidrio' : 'Glass Railings'}</option>
+            <option value="office-partitions">{isZh ? '办公隔断' : isEs ? 'Mamparas de oficina' : 'Office Glass Partitions'}</option>
+            <option value="pleated-screens">{isZh ? '防虫纱窗' : isEs ? 'Mosquiteras plisadas' : 'Pleated Screens'}</option>
+            <option value="upvc">{isZh ? 'uPVC 塑钢窗' : isEs ? 'uPVC (REHAU)' : 'uPVC (REHAU)'}</option>
+            <option value="other">{isZh ? '其他' : isEs ? 'Otro' : 'Other'}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="qf-row">
+        <div class="field">
+          <label for="qf-area">{isZh ? '预估面积' : 'Est. Area Size'}</label>
+          <input id="qf-area" name="areaSize" type="text" placeholder={isZh ? '如：25 m²' : 'e.g., 25 m²'} />
+        </div>
+        <div class="field">
+          <label for="qf-location">{isZh ? '项目地址 / 城市' : 'Location / City'}</label>
+          <input id="qf-location" name="location" type="text" placeholder={isZh ? '如：第比利斯' : 'e.g., Tbilisi'} />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="qf-desc">{isZh ? '项目描述 *' : 'Project Description *'}</label>
+        <textarea id="qf-desc" name="description" rows="4" required placeholder={
+          isZh
+            ? '请描述您的项目需求：门窗类型、数量、特殊要求等…'
+            : 'Describe your project needs: window/door types, quantity, special requirements…'
+        }></textarea>
+      </div>
+
+      <div class="field">
+        <label for="qf-contact-pref">{isZh ? '首选联系方式' : 'Preferred Contact Method'}</label>
+        <select id="qf-contact-pref" name="preferredContact">
+          <option value="phone">{isZh ? '电话' : 'Phone Call'}</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="email">{isZh ? '邮箱' : 'Email'}</option>
+        </select>
+      </div>
+
+      <!-- Turnstile 占位（生产环境 Cloudflare 自动注入） -->
+      <div class="cf-turnstile" data-sitekey={SITE.turnstileSiteKey}></div>
+
+      <button type="submit" class="btn btn-acc qf-submit" data-label={isZh ? '提交报价请求' : 'Submit Quote Request'}>
+        {isZh ? '提交免费报价申请' : 'Get My Free Quote'}
+      </button>
+      <p class="qf-ok" style="display:none">{isZh ? '✅ 报价请求已收到！我们会尽快与您联系。' : '✅ Quote request received! We will contact you soon.'}</p>
+    </form>
+
+    <!-- 快捷联系方式 -->
+    <div class="qf-alt">
+      <span class="qf-alt-label">{isZh ? '或直接联系我们：' : 'Or reach us directly:'}</span>
+      <a class="btn btn-ghost lat" href={`tel:${SITE.phone}`}>
+        📞 {SITE.phone}
+      </a>
+      <a class="btn btn-ghost lat" href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(
+        isZh
+          ? '您好，我想咨询铝门窗产品的免费报价。'
+          : 'Hello, I would like to get a free quote for aluminum windows and doors.'
+      )}`}>
+        💬 WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .quote-form-section {
+    padding: clamp(48px,6vw,80px) 0;
+    background: var(--paper);
+  }
+  .quote-form-section h2 {
+    text-align: center;
+    font-size: clamp(24px,4vw,32px);
+    margin-bottom: 8px;
+  }
+  .quote-form-section .lead {
+    text-align: center;
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto 36px;
+    font-size: 15px;
+  }
+
+  .qf-form {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .qf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 520px) {
+    .qf-row { grid-template-columns: 1fr; }
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 15px;
+    background: #fff;
+    color: var(--ink);
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--camel);
+    box-shadow: 0 0 0 3px rgba(197,150,95,.12);
+  }
+  .field select { appearance: auto; cursor: pointer; }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .qf-submit {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+  }
+  .qf-ok {
+    margin-top: 8px;
+    padding: 12px 16px;
+    background: #ecfdf5;
+    color: #065f46;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .cf-turnstile { margin: 8px 0; overflow: hidden; border-radius: 6px; }
+
+  .qf-alt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .qf-alt-label {
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
