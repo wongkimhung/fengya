@@ -18,6 +18,7 @@ Este directorio es un **Cloudflare Worker independiente** que sustituye a la ant
 | `GET /callback` | GitHub OAuth 回调，仅把短期授权结果回传给 CMS 弹窗，不保存 Token |
 | `POST /api/contact` | 联系表单：姓名 / 电话 / 邮箱 / 留言；Turnstile 人机校验；成功后转发到 Webhook（`NOTIFY_URL`，可接 Slack / 飞书 / 自有接口） |
 | `POST /api/quote`  | 报价表单：姓名 / 电话 / 产品类型 / 面积 / 地址 / 描述；Turnstile 校验；记录写入 Cloudflare KV（90 天过期）；经 Resend 发邮件通知管理员 |
+| `POST /api/translate` | 翻译助手代理（zh / en / es）：Google Cloud Translation API 的 Key 只在 Worker 服务端，浏览器不暴露 |
 | 其他路径 / 方法 | 一律返回 404 / 405 |
 
 通用能力：
@@ -26,7 +27,7 @@ Este directorio es un **Cloudflare Worker independiente** que sustituye a la ant
 - **容错**：Webhook / 邮件 / KV 任一步失败都不影响前端收到「提交成功」，避免用户重复提交。
 
 所需配置（`wrangler secret`，不进仓库）：
-`TURNSTILE_SECRET_KEY`、`NOTIFY_URL`、`RESEND_API_KEY`、`RESEND_FROM_EMAIL`、`QUOTE_NOTIFY_TO`、`GITHUB_OAUTH_ID`、`GITHUB_OAUTH_SECRET`，以及 KV 绑定 `QUOTES`。`DECAP_CMS_ORIGIN` 和 `GITHUB_REPO_PRIVATE` 可按 `worker/wrangler.toml` 配置。
+`TURNSTILE_SECRET_KEY`、`NOTIFY_URL`、`RESEND_API_KEY`、`RESEND_FROM_EMAIL`、`QUOTE_NOTIFY_TO`、`GOOGLE_TRANSLATE_API_KEY`、`GITHUB_OAUTH_ID`、`GITHUB_OAUTH_SECRET`，以及 KV 绑定 `QUOTES`。`TRANSLATE_ALLOWED_ORIGIN`、`DECAP_CMS_ORIGIN`、`GITHUB_REPO_PRIVATE` 可按 `worker/wrangler.toml` 配置。
 
 ### 二、实现原理
 
@@ -85,8 +86,11 @@ curl -X POST http://127.0.0.1:8787/api/quote -d '{}'
 
 | Route | Function |
 | --- | --- |
+| `GET /auth?provider=github` | Decap CMS GitHub OAuth entry point |
+| `GET /callback` | GitHub OAuth callback; returns the short-lived result to the CMS popup only — never stores tokens |
 | `POST /api/contact` | Contact form: name / phone / email / message; Turnstile bot check; forwards to a webhook (`NOTIFY_URL`, e.g. Slack / Feishu / your own endpoint) on success |
 | `POST /api/quote`  | Quote form: name / phone / product type / area / location / description; Turnstile check; stores the record in Cloudflare KV (90-day expiry); sends an email via Resend to the admin |
+| `POST /api/translate` | Translation proxy (zh / en / es): the Google Cloud Translation API key lives only in the Worker, never in the browser |
 | Anything else      | Returns 404 / 405 |
 
 Common capabilities:
@@ -94,7 +98,7 @@ Common capabilities:
 - **Bot protection**: the Turnstile secret lives only server-side in the Worker; the frontend only has the public site key.
 - **Fault tolerance**: a webhook / email / KV failure never fails the response to the user (avoids duplicate submissions).
 
-Required config (`wrangler secret`, never committed): `TURNSTILE_SECRET_KEY`, `NOTIFY_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `QUOTE_NOTIFY_TO`, plus the KV binding `QUOTES`.
+Required config (`wrangler secret`, never committed): `TURNSTILE_SECRET_KEY`, `NOTIFY_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `QUOTE_NOTIFY_TO`, `GOOGLE_TRANSLATE_API_KEY`, `GITHUB_OAUTH_ID`, `GITHUB_OAUTH_SECRET`, plus the KV binding `QUOTES`. `TRANSLATE_ALLOWED_ORIGIN`, `DECAP_CMS_ORIGIN` and `GITHUB_REPO_PRIVATE` can be set in `worker/wrangler.toml`.
 
 ### 2. How it works
 
@@ -141,9 +145,15 @@ curl -X POST http://127.0.0.1:8787/api/quote \
 
 curl -X POST http://127.0.0.1:8787/api/quote -d '{}'
 # → {"ok":false,"error":"missing required fields: ..."}
+
+curl -X POST http://127.0.0.1:8787/api/translate \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"你好","target":"es","source":"zh"}'
+# needs GOOGLE_TRANSLATE_API_KEY → {"ok":true,"translatedText":"Hola",...}
 ```
 
 > Worker-only changes: edit `worker/src/index.ts` and `npm run worker:dev` hot-reloads; the site needs no restart.
+> `/auth` and `/callback` require `GITHUB_OAUTH_ID` / `GITHUB_OAUTH_SECRET`; the callback also needs `DECAP_CMS_ORIGIN`.
 
 ---
 
@@ -153,8 +163,11 @@ curl -X POST http://127.0.0.1:8787/api/quote -d '{}'
 
 | Ruta | Función |
 | --- | --- |
+| `GET /auth?provider=github` | Punto de entrada OAuth de GitHub para Decap CMS |
+| `GET /callback` | Callback OAuth de GitHub; devuelve el resultado de corta vida solo al popup del CMS — nunca guarda tokens |
 | `POST /api/contact` | Formulario de contacto: nombre / teléfono / email / mensaje; verificación anti-bots Turnstile; reenvío a un webhook (`NOTIFY_URL`, p. ej. Slack / Feishu / tu propio endpoint) al tener éxito |
 | `POST /api/quote`  | Formulario de cotización: nombre / teléfono / tipo de producto / área / ubicación / descripción; verificación Turnstile; guarda el registro en Cloudflare KV (caducidad de 90 días); envía un email vía Resend al administrador |
+| `POST /api/translate` | Proxy de traducción (zh / en / es): la clave de Google Cloud Translation vive solo en el Worker, nunca en el navegador |
 | Cualquier otra ruta | Devuelve 404 / 405 |
 
 Capacidades comunes:
@@ -162,7 +175,7 @@ Capacidades comunes:
 - **Protección anti-bots**: el secreto de Turnstile vive solo en el servidor (Worker); el frontend solo tiene la clave pública del sitio.
 - **Tolerancia a fallos**: un fallo en webhook / email / KV nunca hace fallar la respuesta al usuario (evita envíos duplicados).
 
-Configuración necesaria (`wrangler secret`, nunca en el repo): `TURNSTILE_SECRET_KEY`, `NOTIFY_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `QUOTE_NOTIFY_TO`, y el binding KV `QUOTES`.
+Configuración necesaria (`wrangler secret`, nunca en el repo): `TURNSTILE_SECRET_KEY`, `NOTIFY_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `QUOTE_NOTIFY_TO`, `GOOGLE_TRANSLATE_API_KEY`, `GITHUB_OAUTH_ID`, `GITHUB_OAUTH_SECRET`, y el binding KV `QUOTES`. `TRANSLATE_ALLOWED_ORIGIN`, `DECAP_CMS_ORIGIN` y `GITHUB_REPO_PRIVATE` se pueden definir en `worker/wrangler.toml`.
 
 ### 2. Cómo funciona
 
@@ -212,3 +225,4 @@ curl -X POST http://127.0.0.1:8787/api/quote -d '{}'
 ```
 
 > Cambios solo en el Worker: edita `worker/src/index.ts` y `npm run worker:dev` recarga en caliente; el sitio no necesita reiniciarse.
+> `/auth` y `/callback` requieren `GITHUB_OAUTH_ID` / `GITHUB_OAUTH_SECRET`; el callback también necesita `DECAP_CMS_ORIGIN`.

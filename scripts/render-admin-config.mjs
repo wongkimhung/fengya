@@ -17,6 +17,9 @@ if (rawBaseUrl) {
   if (parsed.protocol !== 'https:') {
     throw new Error('DECAP_AUTH_BASE_URL must use https://.');
   }
+  if (parsed.hostname.endsWith('.pages.dev')) {
+    throw new Error('DECAP_AUTH_BASE_URL must point to the OAuth Worker, not a Cloudflare Pages site (*.pages.dev).');
+  }
   if (parsed.pathname !== '/' || parsed.search || parsed.hash) {
     throw new Error('DECAP_AUTH_BASE_URL must be the Worker origin without a path, query, or hash.');
   }

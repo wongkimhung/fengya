@@ -24,7 +24,7 @@ DECAP_CMS_ORIGIN = "https://fengya.pages.dev"
 
 [[kv_namespaces]]
 binding = "QUOTES"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "3f47abd4e4e94075bc16397b69495422"
 
 # 可选：绑定自定义域名（如 form.karfanjara.ge），需在 Cloudflare DNS 添加 CNAME 指向该 Worker 路由
 # [routes]

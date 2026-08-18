@@ -50,16 +50,16 @@ git push origin main
 
 在 Pages 项目 → Settings → Environment variables 中配置 Production 和 Preview：
 
-进入 Cloudflare Dashboard → Workers & Pages → `fengya` → Settings → Environment variables → Add variable。`DECAP_AUTH_BASE_URL` 至少要添加到 **Production**；如果要在 Preview 地址使用 CMS，也同时添加到 **Preview**。Cloudflare Pages 构建时会读取该变量并生成最终的 `/admin/config.yml`。
+进入 Cloudflare Dashboard → Workers & Pages → `fengya` → Settings → Environment variables → Add variable。当前已部署的 OAuth Worker 地址是 `https://karfanjara-form.kdroid.workers.dev`；`DECAP_AUTH_BASE_URL` 必须填写这个 Worker 地址，不能填 Pages 站点地址 `https://fengya.pages.dev`。该变量至少要添加到 **Production**；如果要在 Preview 地址使用 CMS，也同时添加到 **Preview**。Cloudflare Pages 构建时会读取该变量并生成最终的 `/admin/config.yml`。
 
 | 变量 | 示例 | 说明 |
 |---|---|---|
 | `NODE_VERSION` | `20` | 构建 Node 版本 |
 | `TURNSTILE_SITE_KEY` | `0x4AAAA...` | Turnstile 公钥 |
-| `FORM_ENDPOINT` | `https://form.example.com` | Worker 地址，不带 `/api/...` |
+| `FORM_ENDPOINT` | `https://karfanjara-form.kdroid.workers.dev` | Worker 地址，不带 `/api/...` |
 | `MEDIA_BASE` | 留空或 `https://assets.example.com` | 外部图片资源域名，可选 |
 | `SITE_URL` | `https://www.example.com` | canonical / SEO 地址，可选 |
-| `DECAP_AUTH_BASE_URL` | `https://form.example.com` | Decap GitHub OAuth Worker 地址；构建时注入 `/admin/config.yml`，不要写入代码 |
+| `DECAP_AUTH_BASE_URL` | `https://karfanjara-form.kdroid.workers.dev` | Decap GitHub OAuth **Worker** 地址；不能填 `https://fengya.pages.dev`；构建时注入 `/admin/config.yml` |
 
 不要把 `TURNSTILE_SECRET_KEY`、`GOOGLE_TRANSLATE_API_KEY`、Resend Key 等私钥配置到 Pages；它们只属于 Worker Secret。
 
@@ -94,8 +94,8 @@ npx wrangler secret put QUOTE_NOTIFY_TO --config worker/wrangler.toml
 Cloudflare Pages 不是 Netlify，Decap CMS 不能使用默认的 `api.netlify.com` 登录地址。本项目的同一个 Worker 同时提供表单接口和 Decap OAuth 代理：
 
 1. 打开 GitHub → Settings → Developer settings → OAuth Apps → **New OAuth App**。
-2. `Homepage URL` 填 Worker 地址，例如 `https://form.karfanjara.workers.dev`。
-3. `Authorization callback URL` 填 `https://form.karfanjara.workers.dev/callback`。
+2. `Homepage URL` 填 `https://karfanjara-form.kdroid.workers.dev`。
+3. `Authorization callback URL` 填 `https://karfanjara-form.kdroid.workers.dev/callback`。
 4. 创建后把 Client ID 和 Client Secret 写入 Worker Secret（不要写进 GitHub 或 Pages 环境变量）：
 
    ```bash
@@ -115,6 +115,46 @@ Cloudflare Pages 不是 Netlify，Decap CMS 不能使用默认的 `api.netlify.c
    `public/admin/config.yml` 只保存模板；Cloudflare Pages 构建时从 `DECAP_AUTH_BASE_URL` 注入 `base_url` 和 `auth_endpoint: /auth`，因此登录时不会再请求 `api.netlify.com`。
 
 如果你的 Worker 不是示例地址，请只修改 Cloudflare Pages 的 `DECAP_AUTH_BASE_URL`、`FORM_ENDPOINT` 和 GitHub OAuth App 的两个 URL；不要修改模板里的 `base_url`。
+
+### 4.2 OAuth 配置完成后的下一步
+
+按下面顺序完成上线：
+
+1. **在本地终端写入 Worker Secrets**。命令会交互式提示输入，Client Secret 不要写入文件或提交 Git：
+
+   ```bash
+   npx wrangler secret put GITHUB_OAUTH_ID --config worker/wrangler.toml
+   npx wrangler secret put GITHUB_OAUTH_SECRET --config worker/wrangler.toml
+   # 如果 GitHub 仓库是私有的，再执行并输入 1：
+   npx wrangler secret put GITHUB_REPO_PRIVATE --config worker/wrangler.toml
+   ```
+
+2. **重新部署 Worker**：
+
+   ```bash
+   npm run worker:deploy
+   ```
+
+3. **在 Cloudflare Pages 设置环境变量**：
+
+   ```text
+   DECAP_AUTH_BASE_URL=https://karfanjara-form.kdroid.workers.dev
+   FORM_ENDPOINT=https://karfanjara-form.kdroid.workers.dev
+   ```
+
+   `DECAP_AUTH_BASE_URL` 是 OAuth Worker 地址，`FORM_ENDPOINT` 是表单和翻译接口地址；当前两者共用同一个 Worker。
+
+4. **推送当前代码并触发 Pages 重建**：
+
+   ```bash
+   git add .
+   git commit -m "configure Cloudflare OAuth deployment"
+   git push origin main
+   ```
+
+5. **上线验证**：打开 `https://fengya.pages.dev/admin/`，点击 GitHub 登录。正确流程是：CMS → Worker `/auth` → GitHub → Worker `/callback` → CMS；如果地址栏出现 `api.netlify.com` 或 `fengya.pages.dev/auth`，说明 Pages 环境变量还没有生效。
+
+KV 报价存储已创建并写入 `worker/wrangler.toml`；不要再次创建新的 `QUOTES` namespace，除非更换 Cloudflare 账户。
 
 部署 Worker：
 
